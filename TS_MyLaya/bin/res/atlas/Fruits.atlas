@@ -1,0 +1,144 @@
+{
+    "frames": {
+        "5.png": {
+            "frame": {
+                "h": 256,
+                "idx": 0,
+                "w": 256,
+                "x": 0,
+                "y": 0
+            },
+            "sourceSize": {
+                "h": 256,
+                "w": 256
+            },
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0
+            }
+        },
+        "6.png": {
+            "frame": {
+                "h": 252,
+                "idx": 0,
+                "w": 252,
+                "x": 257,
+                "y": 0
+            },
+            "sourceSize": {
+                "h": 256,
+                "w": 256
+            },
+            "spriteSourceSize": {
+                "x": 2,
+                "y": 2
+            }
+        },
+        "7.png": {
+            "frame": {
+                "h": 252,
+                "idx": 0,
+                "w": 252,
+                "x": 510,
+                "y": 0
+            },
+            "sourceSize": {
+                "h": 256,
+                "w": 256
+            },
+            "spriteSourceSize": {
+                "x": 2,
+                "y": 2
+            }
+        },
+        "8.png": {
+            "frame": {
+                "h": 252,
+                "idx": 0,
+                "w": 252,
+                "x": 763,
+                "y": 0
+            },
+            "sourceSize": {
+                "h": 256,
+                "w": 256
+            },
+            "spriteSourceSize": {
+                "x": 2,
+                "y": 2
+            }
+        },
+        "eat1.png": {
+            "frame": {
+                "h": 252,
+                "idx": 0,
+                "w": 252,
+                "x": 257,
+                "y": 253
+            },
+            "sourceSize": {
+                "h": 256,
+                "w": 256
+            },
+            "spriteSourceSize": {
+                "x": 2,
+                "y": 2
+            }
+        },
+        "eat2.png": {
+            "frame": {
+                "h": 252,
+                "idx": 0,
+                "w": 252,
+                "x": 0,
+                "y": 257
+            },
+            "sourceSize": {
+                "h": 256,
+                "w": 256
+            },
+            "spriteSourceSize": {
+                "x": 2,
+                "y": 2
+            }
+        },
+        "eat3.png": {
+            "frame": {
+                "h": 248,
+                "idx": 0,
+                "w": 248,
+                "x": 510,
+                "y": 253
+            },
+            "sourceSize": {
+                "h": 256,
+                "w": 256
+            },
+            "spriteSourceSize": {
+                "x": 4,
+                "y": 4
+            }
+        },
+        "eat4.png": {
+            "frame": {
+                "h": 254,
+                "idx": 0,
+                "w": 254,
+                "x": 759,
+                "y": 253
+            },
+            "sourceSize": {
+                "h": 256,
+                "w": 256
+            },
+            "spriteSourceSize": {
+                "x": 1,
+                "y": 1
+            }
+        }
+    },
+    "meta": {
+        "image": "Fruits.png",
+        "prefix": "Fruits/"
+    }
+}

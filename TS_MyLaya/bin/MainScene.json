@@ -1,0 +1,1 @@
+{"type":"Scene","props":{"width":640,"height":1136},"compId":2,"child":[{"type":"Sprite","props":{"y":208,"x":402,"width":476,"texture":"test/atlas/Fruits/8.png","height":518},"compId":3}],"loadList":["test/atlas/Fruits/8.png"],"loadList3D":[]}
