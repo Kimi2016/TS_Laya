@@ -15,6 +15,7 @@ import Test_5_2_GlowFilter from './study/Test_5_2_GlowFilter';
 import Test_6_1_Sprite_DrawShapes from './study/Test_6_1_Sprite_DrawShapes';
 import Test_7_AtlasAniDemo from './study/Test_7_AtlasAniDemo';
 import Test_8_TweenDemo from './study/Test_8_TweenDemo';
+import Test_9_TimeLine from './study/Test_9_TimeLine';
 
 //启动类
 class AppMain {
@@ -45,7 +46,8 @@ class AppMain {
         //new Test_5_2_GlowFilter();
         //new Test_6_1_Sprite_DrawShapes();
         //new Test_7_AtlasAniDemo();
-        new Test_8_TweenDemo();
+        //new Test_8_TweenDemo();
+        new Test_9_TimeLine();
     }
 }
 
