@@ -2,11 +2,10 @@
     "x":0,
     "type":"Scene",
     "selectedBox":2,
-    "selecteID":3,
     "searchKey":"Scene",
-    "props":{"width":640,"sceneColor":"#7f7f7f","height":1136},
+    "props":{"width":640,"sceneColor":"#7f7f7f","runtime":"script/MainUI.ts","height":1136},
     "nodeParent":-1,
-    "maxID":10,
+    "maxID":16,
     "label":"Scene",
     "isOpen":true,
     "isDirectory":true,
@@ -28,6 +27,78 @@
             "compId":3,
             "child":[
                 ]
+        },
+        {
+            "x":15,
+            "type":"Panel",
+            "searchKey":"Panel",
+            "props":{"y":374,"x":48,"width":230,"vScrollBarSkin":"comp/vscroll.png","height":328},
+            "nodeParent":2,
+            "label":"Panel",
+            "isOpen":true,
+            "isDirectory":true,
+            "isAniNode":true,
+            "hasChild":true,
+            "compId":15,
+            "child":[
+                {
+                    "x":30,
+                    "type":"Panel",
+                    "searchKey":"Panel",
+                    "props":{"y":0,"x":21,"width":275,"height":407},
+                    "nodeParent":15,
+                    "label":"Panel",
+                    "isOpen":true,
+                    "isDirectory":true,
+                    "isAniNode":true,
+                    "hasChild":true,
+                    "compId":10,
+                    "child":[
+                        {
+                            "x":45,
+                            "type":"Sprite",
+                            "searchKey":"Sprite",
+                            "props":{"y":167.5,"x":50,"texture":"test/bear_51x72.png"},
+                            "nodeParent":10,
+                            "label":"Sprite",
+                            "isDirectory":false,
+                            "isAniNode":true,
+                            "hasChild":false,
+                            "compId":11,
+                            "child":[
+                                ]
+                        },
+                        {
+                            "x":45,
+                            "type":"Sprite",
+                            "searchKey":"Sprite",
+                            "props":{"y":27,"x":41,"texture":"test/bear_68x96.png"},
+                            "nodeParent":10,
+                            "label":"Sprite",
+                            "isOpen":true,
+                            "isDirectory":false,
+                            "isAniNode":true,
+                            "hasChild":false,
+                            "compId":12,
+                            "child":[
+                                ]
+                        },
+                        {
+                            "x":45,
+                            "type":"Sprite",
+                            "searchKey":"Sprite",
+                            "props":{"y":195,"x":3,"width":143,"texture":"test/atlas/Fruits/8.png","height":199},
+                            "nodeParent":10,
+                            "label":"Sprite",
+                            "isOpen":true,
+                            "isDirectory":false,
+                            "isAniNode":true,
+                            "hasChild":false,
+                            "compId":13,
+                            "child":[
+                                ]
+                        }]
+                }]
         }],
     "animations":[
         {

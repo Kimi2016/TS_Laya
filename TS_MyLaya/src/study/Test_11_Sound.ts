@@ -52,11 +52,15 @@ export default class Test_11_Sound {
 
     private onPlayMusic(e: Event): void {
         console.log("播放音乐");
+        SoundManager.soundMuted = true;
+        SoundManager.musicMuted = !SoundManager.soundMuted;
         SoundManager.playMusic(this.musicString, 1, new Handler(this, this.onComplete));
     }
 
     private onPlaySound(e: Event): void {
         console.log("播放音效");
+        SoundManager.musicMuted = true;
+        SoundManager.soundMuted = !SoundManager.musicMuted;
         SoundManager.playSound(this.soundString, 1, new Handler(this, this.onComplete));
     }
 
