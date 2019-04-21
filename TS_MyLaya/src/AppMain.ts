@@ -16,6 +16,8 @@ import Test_6_1_Sprite_DrawShapes from './study/Test_6_1_Sprite_DrawShapes';
 import Test_7_AtlasAniDemo from './study/Test_7_AtlasAniDemo';
 import Test_8_TweenDemo from './study/Test_8_TweenDemo';
 import Test_9_TimeLine from './study/Test_9_TimeLine';
+import Test_9_TimeLineUI from './study/Test_9_TimeLineUI';
+import Test_11_Sound from './study/Test_11_Sound';
 
 //启动类
 class AppMain {
@@ -24,8 +26,15 @@ class AppMain {
         Laya.init(Browser.clientWidth, Browser.clientHeight, WebGL);
         Laya.stage.alignV = Stage.ALIGN_MIDDLE;
         Laya.stage.alignH = Stage.ALIGN_CENTER;
-        Laya.stage.scaleMode = "showall";
+        Laya.stage.scaleMode = Stage.SCALE_FULL;//SCALE_FIXED_HEIGHT
+        Laya.stage.screenMode = Stage.SCREEN_HORIZONTAL;//SCREEN_VERTICAL
         Laya.stage.bgColor = "#7f7f7f";
+
+
+        //如果通过设备静音键让音频自动跟随设备静音。需要将useAudioMusic设置为false。
+        Laya.SoundManager.useAudioMusic=false;
+        Laya.SoundManager.autoStopMusic = false;
+
         //消除矢量绘制的锯齿，但会增加性能消耗
         Config.isAntialias=true;
 
@@ -47,7 +56,9 @@ class AppMain {
         //new Test_6_1_Sprite_DrawShapes();
         //new Test_7_AtlasAniDemo();
         //new Test_8_TweenDemo();
-        new Test_9_TimeLine();
+        //new Test_9_TimeLine();
+        //new Test_9_TimeLineUI();
+        new Test_11_Sound();
     }
 }
 
