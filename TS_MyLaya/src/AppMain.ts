@@ -19,6 +19,8 @@ import Test_9_TimeLine from './study/Test_9_TimeLine';
 import Test_9_TimeLineUI from './study/Test_9_TimeLineUI';
 import Test_11_Sound from './study/Test_11_Sound';
 import GameConfig from './GameConfig';
+import Test_0_1_Channel from './study/Test_0_1_Channel';
+import Test_0_1_Socket from './study/Test_0_1_Socket';
 
 //启动类
 class AppMain {
@@ -94,7 +96,8 @@ class AppMain {
         //new Test_8_TweenDemo();
         //new Test_9_TimeLine();
         //new Test_9_TimeLineUI();
-        new Test_11_Sound();
+        //new Test_11_Sound();
+        new Test_0_1_Socket();
     }
 }
 

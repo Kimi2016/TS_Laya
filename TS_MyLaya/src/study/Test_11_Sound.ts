@@ -8,8 +8,8 @@ import Handler = Laya.Handler;
 import WebGL = Laya.WebGL;
 export default class Test_11_Sound {
 
-    //声明一个信息文本
-    private txtInfo: Text;
+    private musicString:string = "./sound/心跳的证明.mp3";
+    private soundString:string = "./sound/hit.wav";
 
     constructor() {
         this.setup();
@@ -46,21 +46,17 @@ export default class Test_11_Sound {
         return button;
     }
 
-    //private musicString:string = "./sounds/心跳的证明.mp3";
-    private musicString:string = "./res/心跳的证明.mp3";
-    private soundString:string = "./sounds/hit.wav";
-
     private onPlayMusic(e: Event): void {
         console.log("播放音乐");
         SoundManager.soundMuted = true;
-        SoundManager.musicMuted = !SoundManager.soundMuted;
+        SoundManager.musicMuted = false;
         SoundManager.playMusic(this.musicString, 1, new Handler(this, this.onComplete));
     }
 
     private onPlaySound(e: Event): void {
         console.log("播放音效");
         SoundManager.musicMuted = true;
-        SoundManager.soundMuted = !SoundManager.musicMuted;
+        SoundManager.soundMuted = false;
         SoundManager.playSound(this.soundString, 1, new Handler(this, this.onComplete));
     }
 
