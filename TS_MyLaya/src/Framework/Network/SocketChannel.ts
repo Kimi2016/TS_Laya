@@ -1,10 +1,10 @@
 
 class SocketChannel {
 
-    WEBPACK_HEAD_OFFSET:number =		0;	// 自定义数据 一般是roleid (long类型)
-    WEBPACK_MESSSAGEID_OFFSET:number =	8;	// 消息id
-    WEBPACK_LENGTH_OFFSET:number =		12;	// 消息长度
-    WEBPACK_HEAD_SIZE:number =			16;	// 消息数据开始位置
+    private WEBPACK_HEAD_OFFSET:number =		0;	// 自定义数据 一般是roleid (long类型)
+    private WEBPACK_MESSSAGEID_OFFSET:number =	8;	// 消息id
+    private WEBPACK_LENGTH_OFFSET:number =		12;	// 消息长度
+    private WEBPACK_HEAD_SIZE:number =			16;	// 消息数据开始位置
 
 
     public socket: Laya.Socket = null;
@@ -98,24 +98,37 @@ class SocketChannel {
     }
 
     //发送二进制数据
-    public sendByte(content: Laya.Byte): void {
-        this.byte.writeByte(1);//写入一个字节
-        this.byte.writeInt16(20);//写入一个int16的数据
-        this.byte.writeFloat32(20.5);//写入一个32位的浮点数据
-        this.byte.writeUTFString("hello");// 写入一个字符串；
+    public sendByte(msgId:number, bytes: Laya.Byte): void {
+        //this.byte.writeByte(1);//写入一个字节
+        //this.byte.writeInt16(20);//写入一个int16的数据
+        //this.byte.writeFloat32(20.5);//写入一个32位的浮点数据
+        //this.byte.writeUTFString("hello");// 写入一个字符串；
+        //this.byte.writeFloat64(1);
 
-        var by: Laya.Byte = new Laya.Byte();//这里声明一个临时Byte类型
-        by.endian = Laya.Byte.LITTLE_ENDIAN;//设置endian；
-        by.writeInt32(5000);//写入一个int32数据
-        by.writeUint16(16);//写入一个uint16 数据
+        //var by: Laya.Byte = new Laya.Byte();//这里声明一个临时Byte类型
+        //by.endian = Laya.Byte.LITTLE_ENDIAN;//设置endian；
+        //by.writeInt32(5000);//写入一个int32数据
+        //by.writeUint16(16);//写入一个uint16 数据
 
-        this.byte.writeArrayBuffer(by.buffer);//把临时字节数据的数据写入byte中，这里注意写入的是by.buffer;
-        this.send(this.byte.buffer);//这里是把字节数组的数据通过socket发送给服务器。
-        this.byte.clear();//清除掉数据;方便下次读写；
+        //this.byte.writeArrayBuffer(by.buffer);//把临时字节数据的数据写入byte中，这里注意写入的是by.buffer;
+        //this.send(this.byte.buffer);//这里是把字节数组的数据通过socket发送给服务器。
+        //this.byte.clear();//清除掉数据;方便下次读写；
+
+        //WEBPACK_HEAD_OFFSET
+        this.byte.writeFloat64(0);
+        //WEBPACK_MESSSAGEID_OFFSET
+        this.byte.writeFloat32(0);
+        //WEBPACK_LENGTH_OFFSET
+        this.byte.writeFloat32(bytes.length);
+        //消息体
+        this.byte.writeArrayBuffer(bytes.buffer);
+
+        this.send(this.byte.buffer);
     }
 
     //需要发送的数据(String或者ArrayBuffer)
     private send(content: any): void {
         this.socket.send(content);
+        this.byte.clear();
     }
 }

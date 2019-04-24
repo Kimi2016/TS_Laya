@@ -72,4 +72,172 @@ declare namespace PBMassage {
          */
         public static verify(message: { [k: string]: any }): (string|null);
     }
+
+    /** Properties of a GM_VerifyVersion. */
+    interface IGM_VerifyVersion {
+
+        /** GM_VerifyVersion version */
+        version: string;
+
+        /** 平台 */
+        platform: number;
+
+        /** 0、正常，1、测试，不需要验证版本 */
+        istest?: (number|null);
+    }
+
+    /** Represents a GM_VerifyVersion. */
+    class GM_VerifyVersion implements IGM_VerifyVersion {
+
+        /**
+         * Constructs a new GM_VerifyVersion.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: PBMassage.IGM_VerifyVersion);
+
+        /** GM_VerifyVersion version. */
+        public version: string;
+
+        /** 平台 */
+        public platform: number;
+
+        /** 0、正常，1、测试，不需要验证版本 */
+        public istest: number;
+
+        /**
+         * Creates a new GM_VerifyVersion instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns GM_VerifyVersion instance
+         */
+        public static create(properties?: PBMassage.IGM_VerifyVersion): PBMassage.GM_VerifyVersion;
+
+        /**
+         * Encodes the specified GM_VerifyVersion message. Does not implicitly {@link PBMassage.GM_VerifyVersion.verify|verify} messages.
+         * @param message GM_VerifyVersion message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: PBMassage.IGM_VerifyVersion, writer?: protobuf.Writer): protobuf.Writer;
+
+        /**
+         * Encodes the specified GM_VerifyVersion message, length delimited. Does not implicitly {@link PBMassage.GM_VerifyVersion.verify|verify} messages.
+         * @param message GM_VerifyVersion message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: PBMassage.IGM_VerifyVersion, writer?: protobuf.Writer): protobuf.Writer;
+
+        /**
+         * Decodes a GM_VerifyVersion message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns GM_VerifyVersion
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: (protobuf.Reader|Uint8Array), length?: number): PBMassage.GM_VerifyVersion;
+
+        /**
+         * Decodes a GM_VerifyVersion message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns GM_VerifyVersion
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: (protobuf.Reader|Uint8Array)): PBMassage.GM_VerifyVersion;
+
+        /**
+         * Verifies a GM_VerifyVersion message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+    }
+
+    /** Properties of a GM_VerifyVersionReturn. */
+    interface IGM_VerifyVersionReturn {
+
+        /** GM_VerifyVersionReturn result */
+        result: number;
+
+        /** GM_VerifyVersionReturn serverversion */
+        serverversion: string;
+
+        /** GM_VerifyVersionReturn serverFlag */
+        serverFlag?: (number|null);
+
+        /** GM_VerifyVersionReturn url */
+        url?: (string|null);
+    }
+
+    /** Represents a GM_VerifyVersionReturn. */
+    class GM_VerifyVersionReturn implements IGM_VerifyVersionReturn {
+
+        /**
+         * Constructs a new GM_VerifyVersionReturn.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: PBMassage.IGM_VerifyVersionReturn);
+
+        /** GM_VerifyVersionReturn result. */
+        public result: number;
+
+        /** GM_VerifyVersionReturn serverversion. */
+        public serverversion: string;
+
+        /** GM_VerifyVersionReturn serverFlag. */
+        public serverFlag: number;
+
+        /** GM_VerifyVersionReturn url. */
+        public url: string;
+
+        /**
+         * Creates a new GM_VerifyVersionReturn instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns GM_VerifyVersionReturn instance
+         */
+        public static create(properties?: PBMassage.IGM_VerifyVersionReturn): PBMassage.GM_VerifyVersionReturn;
+
+        /**
+         * Encodes the specified GM_VerifyVersionReturn message. Does not implicitly {@link PBMassage.GM_VerifyVersionReturn.verify|verify} messages.
+         * @param message GM_VerifyVersionReturn message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: PBMassage.IGM_VerifyVersionReturn, writer?: protobuf.Writer): protobuf.Writer;
+
+        /**
+         * Encodes the specified GM_VerifyVersionReturn message, length delimited. Does not implicitly {@link PBMassage.GM_VerifyVersionReturn.verify|verify} messages.
+         * @param message GM_VerifyVersionReturn message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: PBMassage.IGM_VerifyVersionReturn, writer?: protobuf.Writer): protobuf.Writer;
+
+        /**
+         * Decodes a GM_VerifyVersionReturn message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns GM_VerifyVersionReturn
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: (protobuf.Reader|Uint8Array), length?: number): PBMassage.GM_VerifyVersionReturn;
+
+        /**
+         * Decodes a GM_VerifyVersionReturn message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns GM_VerifyVersionReturn
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: (protobuf.Reader|Uint8Array)): PBMassage.GM_VerifyVersionReturn;
+
+        /**
+         * Verifies a GM_VerifyVersionReturn message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+    }
 }

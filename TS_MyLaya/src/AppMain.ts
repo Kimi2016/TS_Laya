@@ -22,6 +22,7 @@ import GameConfig from './GameConfig';
 import Test_0_1_Channel from './study/Test_0_1_Channel';
 import Test_0_1_Socket from './study/Test_0_1_Socket';
 import Test_0_Network_ProtocolBuffer from './study/Test_0_Network_ProtocolBuffer';
+import NetworkManager from './Framework/Network/NetworkManager';
 
 //启动类
 class AppMain {
@@ -75,6 +76,9 @@ class AppMain {
 	}
 
 	onConfigLoaded(): void {
+        //初始Protobuf
+        NetworkManager.getInstance();
+
 		//加载IDE指定的场景
         GameConfig.startScene && Laya.Scene.open(GameConfig.startScene);
         

@@ -49,7 +49,7 @@ class GameClient {
     }
 
     public sendByte(msgId: GameMessage, content: Laya.Byte) {
-        this.socketChannel.sendByte(content);
+        this.socketChannel.sendByte(msgId, content);
     }
 }
 

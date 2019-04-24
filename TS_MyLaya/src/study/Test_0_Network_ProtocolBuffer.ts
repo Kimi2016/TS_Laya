@@ -37,6 +37,7 @@ export default class Test_0_Network_ProtocolBuffer {
             }).finish();
         // ... do something with buffer
 
+
         // Decode an Uint8Array (browser) or Buffer (node) to a message
         var message: any = AwesomeMessage.decode(buffer);
         // ... do something with message
