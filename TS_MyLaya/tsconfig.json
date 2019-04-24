@@ -5,6 +5,11 @@
     "noEmitHelpers": true,
     "sourceMap": false
   },
+  "include": [
+    "src",
+    "libs",
+    "bin/protobuf/**/*.d.ts"
+  ],
   "exclude": [
     "node_modules"
   ]
