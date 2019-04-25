@@ -22,7 +22,7 @@ import GameConfig from './GameConfig';
 import Test_0_1_Channel from './study/Test_0_1_Channel';
 import Test_0_1_Socket from './study/Test_0_1_Socket';
 import Test_0_Network_ProtocolBuffer from './study/Test_0_Network_ProtocolBuffer';
-import NetworkManager from './script/Framework/Network/NetworkManager';
+import NetworkManager from './Framework/Network/NetworkManager';
 
 //启动类
 class AppMain {
