@@ -76,7 +76,7 @@ class AppMain {
 
 	onConfigLoaded(): void {
         //初始Protobuf
-        NetworkManager.getInstance();
+        //NetworkManager.getInstance();
 
 		//加载IDE指定的场景
         GameConfig.startScene && Laya.Scene.open(GameConfig.startScene);

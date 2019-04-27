@@ -6,7 +6,7 @@ export default class NetworkManager {
     private static instance: NetworkManager;
     private protoBuf: any = Browser.window.protobuf;
     private static protoRoot: any = null;
-    private protofilePath: string = "./protobuf/protofile/protofile.proto";
+    private protofilePath: string = "../bin/res/protobuf/protofile.proto";
 
     public static getInstance(): NetworkManager {
         if (!this.instance) {
@@ -16,7 +16,7 @@ export default class NetworkManager {
     }
 
     private constructor() {
-        this.loadProtofile();
+        //this.loadProtofile();
     }
 
     private loadProtofile(): void {
