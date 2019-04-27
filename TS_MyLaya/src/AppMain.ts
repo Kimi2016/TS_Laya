@@ -102,7 +102,7 @@ class AppMain {
         //new Test_9_TimeLineUI();
         //new Test_11_Sound();
         //new Test_0_1_Socket();
-        //new Test_0_Network_ProtocolBuffer();
+        new Test_0_Network_ProtocolBuffer();
     }
 }
 

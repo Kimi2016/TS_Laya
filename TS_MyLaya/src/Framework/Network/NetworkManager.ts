@@ -6,7 +6,7 @@ export default class NetworkManager {
     private static instance: NetworkManager;
     private protoBuf: any = Browser.window.protobuf;
     private static protoRoot: any = null;
-    private protofilePath: string = "../bin/res/protobuf/protofile.proto";
+    private protofilePath: string = "./protobuf/protofile.proto";
 
     public static getInstance(): NetworkManager {
         if (!this.instance) {
@@ -35,7 +35,7 @@ export default class NetworkManager {
         // Create a new message
         var message: any = AwesomeMessage.create(
             {
-                awesome_Field: "AwesomeString"
+                awesome_field: "AwesomeString"
             });
 
         console.log(message);

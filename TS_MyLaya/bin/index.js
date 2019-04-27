@@ -14,3 +14,5 @@ loadLib("libs/laya.ui.js")
 loadLib("libs/laya.physics.js")
 //-----libs-end-------
 loadLib("js/bundle.js");
+loadLib("protobuf/library/protobuf-library.js");
+loadLib("protobuf/bundles/protobuf-bundles.js");
