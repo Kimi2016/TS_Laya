@@ -1,0 +1,1 @@
+{"type":"Dialog","props":{"width":640,"runtime":"study/Test_9_TimeLineUI.ts","height":1136},"compId":2,"child":[{"type":"Animation","props":{"y":427,"x":290,"width":0,"var":"bear","source":"test/TimeLine.ani","rotation":0,"height":0},"compId":3}],"loadList":["test/TimeLine.ani"],"loadList3D":[]}

@@ -6,14 +6,13 @@ import Handler = Laya.Handler;
 //2.2 设置发光滤镜与阴影滤镜
 export default class Test_5_2_GlowFilter
 {
-    //private imgPath: string = "./res/atlas/strawberry.png";
     private imgPath: string = "./res/atlas/strawberry.png";
     
     constructor() {
         Laya.loader.load(this.imgPath, Handler.create(this, this.setup));
     }
     
-    setup(): void {
+    private setup(): void {
         this.createImg(100,50);
         this.createGlowFilter(400,50);
         this.createShadowFilter(700,50);

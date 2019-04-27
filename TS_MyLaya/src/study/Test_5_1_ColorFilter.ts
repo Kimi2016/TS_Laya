@@ -7,7 +7,6 @@ import Handler = Laya.Handler
 //1.2 设置颜色滤镜
 export default class Test_5_1_ColorFilter
 {
-    //private imgPath: string = "./././laya/assets/test/if_grapes_2003194.png";
     private imgPath: string = "./res/atlas/orange.png";
     private img:Texture;
     

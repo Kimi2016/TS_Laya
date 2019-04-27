@@ -1,0 +1,13 @@
+1.如何安装
+
+npm install protobufjs@6.8.8 -g
+npm install @egret/protobuf -g
+
+2.如何使用
+
+--项目名称：“laya-project”
+--进入目录 “laya-project”
+
+--使用命令 "pb-egret add"
+--需要将 *.proto                      文件放在 “laya-project/protobuf/protofile” 文件夹
+--使用命令 "pb-egret generate"

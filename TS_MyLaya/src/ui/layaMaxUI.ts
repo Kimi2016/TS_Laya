@@ -21,16 +21,4 @@ export module ui {
         }
     }
     REG("ui.TimeLineUI",TimeLineUI);
-}
-export module ui.test {
-    export class TestSceneUI extends Scene {
-		public scoreLbl:Laya.Label;
-		public tipLbll:Laya.Label;
-        constructor(){ super()}
-        createChildren():void {
-            super.createChildren();
-            this.loadScene("test/TestScene");
-        }
-    }
-    REG("ui.test.TestSceneUI",TestSceneUI);
 }

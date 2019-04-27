@@ -2,10 +2,10 @@
 
 
 export default class Test_0_Network_ProtocolBuffer {
-    private ProtoBuf: any = Laya.Browser.window.protobuf;
+    private protoBuf: any = Laya.Browser.window.protobuf;
 
     constructor() {
-        this.ProtoBuf.load("./protobuf/protofile/protofile.proto", this.onAssetsLoaded);
+        this.protoBuf.load("./protobuf/protofile/protofile.proto", this.onAssetsLoaded);
     }
 
     private onAssetsLoaded(err: any, root: any): void {
@@ -13,12 +13,12 @@ export default class Test_0_Network_ProtocolBuffer {
             throw err;
 
         // Obtain a message type
-        var AwesomeMessage: any = root.lookup("PBMassage.AwesomeMessage");
+        var AwesomeMessage: any = root.lookup("PBMessage.AwesomeMessage");
 
         // Create a new message
         var message: any = AwesomeMessage.create(
             {
-                awesomeField: "AwesomeString"
+                awesome_Field: "AwesomeString"
             });
 
         // Verify the message if necessary (i.e. when possibly incomplete or invalid)
@@ -33,7 +33,7 @@ export default class Test_0_Network_ProtocolBuffer {
         // Or, encode a plain object
         var buffer: any = AwesomeMessage.encode(
             {
-                awesomeField: "AwesomeString"
+                awesome_Field: "AwesomeString"
             }).finish();
         // ... do something with buffer
 
@@ -41,7 +41,20 @@ export default class Test_0_Network_ProtocolBuffer {
         // Decode an Uint8Array (browser) or Buffer (node) to a message
         var message: any = AwesomeMessage.decode(buffer);
         // ... do something with message
+        
+        console.log(message);
 
         // If your application uses length-delimited buffers, there is also encodeDelimited and decodeDelimited.
     }
+
+
+    private createText(msg:string): void {
+        var txt: Laya.Text = new Laya.Text();
+        txt.text = "Protobuf：" + msg;
+        txt.size(300, 50);
+        txt.fontSize = 50;
+        txt.color = "#ffffff";
+        Laya.stage.addChild(txt);
+    }
+
 }

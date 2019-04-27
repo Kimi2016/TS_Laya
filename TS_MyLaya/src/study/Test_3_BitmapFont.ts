@@ -16,7 +16,7 @@ export default class Test_3_BitmapFont
     private loadFont():void
     {
         var bitmapFont:BitmapFont = new BitmapFont();
-        bitmapFont.loadFont("BMFont.fnt", new Handler(this, this.onFontLoaded, [bitmapFont]));
+        bitmapFont.loadFont("./res/font/BMFont.fnt", new Handler(this, this.onFontLoaded, [bitmapFont]));
     }
 
     private onFontLoaded(bitmapFont:BitmapFont):void

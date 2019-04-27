@@ -30,11 +30,10 @@ class AppMain {
         //根据IDE设置初始化引擎		
         if (window["Laya3D"]) {
             Laya3D.init(GameConfig.width, GameConfig.height);
-
-            // 不支持WebGL时自动切换至Canvas
-            //Laya.init(Browser.clientWidth, Browser.clientHeight, WebGL);
         }
         else {
+            // 不支持WebGL时自动切换至Canvas
+            //Laya.init(Browser.clientWidth, Browser.clientHeight, WebGL);
             Laya.init(GameConfig.width, GameConfig.height, Laya["WebGL"]);
         }
         Laya["Physics"] && Laya["Physics"].enable();
@@ -103,7 +102,7 @@ class AppMain {
         //new Test_9_TimeLineUI();
         //new Test_11_Sound();
         //new Test_0_1_Socket();
-        new Test_0_Network_ProtocolBuffer();
+        //new Test_0_Network_ProtocolBuffer();
     }
 }
 

@@ -28,7 +28,31 @@ export default class NetworkManager {
             throw err;
         }
         NetworkManager.protoRoot = root;
+
+        // Obtain a message type
+        var AwesomeMessage: any = root.lookup("PBMessage.AwesomeMessage");
+
+        // Create a new message
+        var message: any = AwesomeMessage.create(
+            {
+                awesome_Field: "AwesomeString"
+            });
+
+        console.log(message);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+    
 
     private lookup(massageName: string, massageContent: any): any {
         var MessageBody = NetworkManager.protoRoot.lookup(massageName)

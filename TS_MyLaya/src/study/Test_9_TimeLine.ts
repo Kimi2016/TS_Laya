@@ -2,7 +2,7 @@
 export default class Test_9_TimeLine {
     Test_9_TimeLine() {
         //加载图集成功后，执行onLoad回调方法
-        Laya.loader.load("res/atlas/test.atlas", Laya.Handler.create(this, this.onLoaded));
+        Laya.loader.load("./res/atlas/test.atlas", Laya.Handler.create(this, this.onLoaded));
     }
 
     private onLoaded(): void {

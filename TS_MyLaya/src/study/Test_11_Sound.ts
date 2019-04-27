@@ -8,7 +8,8 @@ import Handler = Laya.Handler;
 import WebGL = Laya.WebGL;
 export default class Test_11_Sound {
 
-    private musicString:string = "./sound/心跳的证明.mp3";
+    //private musicString:string = "./sound/心跳的证明.mp3";
+    private musicString:string = "./sound/destroy.mp3";
     private soundString:string = "./sound/hit.wav";
 
     constructor() {
