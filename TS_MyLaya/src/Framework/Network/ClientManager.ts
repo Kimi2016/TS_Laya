@@ -12,44 +12,45 @@ enum ClientID {
 
 class GameClient {
     private clientId: ClientID;
-    private socketChannel: SocketChannel;
+    private socketConnect: SocketConnect;
 
     constructor(id: ClientID) {
         this.clientId = id;
     }
 
     public connect(host: string, port: number): void {
-        this.socketChannel = new SocketChannel("clientId:" + this.clientId);
-        this.socketChannel.connect(host, port);
+        this.socketConnect = new SocketConnect("clientId:" + this.clientId);
+        this.socketConnect.connect(host, port);
     }
 
     public connectByUrl(url: string): void {
-        this.socketChannel = new SocketChannel("clientId:" + this.clientId);
-        this.socketChannel.connectByUrl(url);
+        this.socketConnect = new SocketConnect("clientId:" + this.clientId);
+        this.socketConnect.connectByUrl(url);
     }
 
-    public reConnect() {
-        this.socketChannel.reConnect();
+    public reConnect(): void {
+        this.socketConnect.reConnect();
     }
 
-    public disConnect() {
-        this.socketChannel.disConnect();
+    public disConnect(): void {
+        this.socketConnect.disConnect();
     }
 
-    public isConnected() {
-        return this.socketChannel.connected();
+    public isConnected(): boolean {
+        return this.socketConnect.connected();
     }
 
-    public sendString(msgId: GameMessage, context: string) {
-        this.socketChannel.sendString(context);
+    public sendEmpty(msgId: GameMessage): void {
+        this.socketConnect.sendEmpty(msgId);
     }
 
-    public sendEmpty(msgId: GameMessage) {
-
-    }
-
-    public sendByte(msgId: GameMessage, content: Laya.Byte) {
-        this.socketChannel.sendByte(msgId, content);
+    public sendMassage(msgId: GameMessage, content: string | Laya.Byte): void {
+        if (content as string) {
+            this.socketConnect.sendString(msgId, content as string);
+        }
+        else {
+            this.socketConnect.sendByte(msgId, content as Laya.Byte);
+        }
     }
 }
 
@@ -59,7 +60,7 @@ export default class ClientManager {
     private static clientManager: ClientManager = null;
 
     public static getSingleton(): ClientManager {
-        if (this.clientManager == null) {
+        if (!this.clientManager) {
             this.clientManager = new ClientManager();
         }
         return this.clientManager;
@@ -75,34 +76,44 @@ export default class ClientManager {
         return null;
     }
 
-
-    public login(): GameClient {
-        return this.GetClient(ClientID.login)
+    public loginSendMessage(msgId: GameMessage, content: Laya.Byte): void {
+        let client: GameClient = this.GetClient(ClientID.login)
+        if (!client) {
+            client.sendMassage(msgId, content)
+        }
     }
 
-    public logic(): GameClient {
-        return this.GetClient(ClientID.logic)
+    public logicSendMessage(msgId: GameMessage, content: Laya.Byte): void {
+        let client: GameClient = this.GetClient(ClientID.logic)
+        if (!client) {
+            client.sendMassage(msgId, content)
+        }
     }
 
-    public scene(): GameClient {
-        return this.GetClient(ClientID.scene)
+    public sceneSendMessage(msgId: GameMessage, content: Laya.Byte): void {
+        let client: GameClient = this.GetClient(ClientID.scene)
+        if (!client) {
+            client.sendMassage(msgId, content)
+        }
     }
 
     public clearAllGameClient() {
+        let dic = this.gameClientDic
+        for (const key in dic) {
+            if (dic.hasOwnProperty(key)) {
+                const element = dic[key];
+                element.disConnect();
+            }
+        }
         this.gameClientDic = {}
     }
 
-    public sendMessageEmpty(msgId: GameMessage) {
-        var client: GameClient = null;
+    public sendMessageEmpty(msgId: GameMessage): void {
         if (msgId > GameMessage.GM_ACCOUNT_SERVER_MESSAGE_START && msgId < GameMessage.GM_ACCOUNT_SERVER_MESSAGE_END) {
-            client = this.login();
+            this.loginSendMessage(msgId, null);
         }
         else {
-            client = this.logic();
-        }
-
-        if (client != null) {
-            client.sendEmpty(msgId);
+            this.logicSendMessage(msgId, null);
         }
     }
 }

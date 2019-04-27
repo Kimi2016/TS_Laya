@@ -103,29 +103,32 @@ var GameClient = /** @class */ (function () {
         this.clientId = id;
     }
     GameClient.prototype.connect = function (host, port) {
-        this.socketChannel = new SocketChannel("clientId:" + this.clientId);
-        this.socketChannel.connect(host, port);
+        this.socketConnect = new SocketConnect("clientId:" + this.clientId);
+        this.socketConnect.connect(host, port);
     };
     GameClient.prototype.connectByUrl = function (url) {
-        this.socketChannel = new SocketChannel("clientId:" + this.clientId);
-        this.socketChannel.connectByUrl(url);
+        this.socketConnect = new SocketConnect("clientId:" + this.clientId);
+        this.socketConnect.connectByUrl(url);
     };
     GameClient.prototype.reConnect = function () {
-        this.socketChannel.reConnect();
+        this.socketConnect.reConnect();
     };
     GameClient.prototype.disConnect = function () {
-        this.socketChannel.disConnect();
+        this.socketConnect.disConnect();
     };
     GameClient.prototype.isConnected = function () {
-        return this.socketChannel.connected();
-    };
-    GameClient.prototype.sendString = function (msgId, context) {
-        this.socketChannel.sendString(context);
+        return this.socketConnect.connected();
     };
     GameClient.prototype.sendEmpty = function (msgId) {
+        this.socketConnect.sendEmpty(msgId);
     };
-    GameClient.prototype.sendByte = function (msgId, content) {
-        this.socketChannel.sendByte(msgId, content);
+    GameClient.prototype.sendMassage = function (msgId, content) {
+        if (content) {
+            this.socketConnect.sendString(msgId, content);
+        }
+        else {
+            this.socketConnect.sendByte(msgId, content);
+        }
     };
     return GameClient;
 }());
@@ -134,7 +137,7 @@ var ClientManager = /** @class */ (function () {
         this.gameClientDic = {};
     }
     ClientManager.getSingleton = function () {
-        if (this.clientManager == null) {
+        if (!this.clientManager) {
             this.clientManager = new ClientManager();
         }
         return this.clientManager;
@@ -145,28 +148,40 @@ var ClientManager = /** @class */ (function () {
         }
         return null;
     };
-    ClientManager.prototype.login = function () {
-        return this.GetClient(ClientID.login);
+    ClientManager.prototype.loginSendMessage = function (msgId, content) {
+        var client = this.GetClient(ClientID.login);
+        if (!client) {
+            client.sendMassage(msgId, content);
+        }
     };
-    ClientManager.prototype.logic = function () {
-        return this.GetClient(ClientID.logic);
+    ClientManager.prototype.logicSendMessage = function (msgId, content) {
+        var client = this.GetClient(ClientID.logic);
+        if (!client) {
+            client.sendMassage(msgId, content);
+        }
     };
-    ClientManager.prototype.scene = function () {
-        return this.GetClient(ClientID.scene);
+    ClientManager.prototype.sceneSendMessage = function (msgId, content) {
+        var client = this.GetClient(ClientID.scene);
+        if (!client) {
+            client.sendMassage(msgId, content);
+        }
     };
     ClientManager.prototype.clearAllGameClient = function () {
+        var dic = this.gameClientDic;
+        for (var key in dic) {
+            if (dic.hasOwnProperty(key)) {
+                var element = dic[key];
+                element.disConnect();
+            }
+        }
         this.gameClientDic = {};
     };
     ClientManager.prototype.sendMessageEmpty = function (msgId) {
-        var client = null;
         if (msgId > GameMessage.GM_ACCOUNT_SERVER_MESSAGE_START && msgId < GameMessage.GM_ACCOUNT_SERVER_MESSAGE_END) {
-            client = this.login();
+            this.loginSendMessage(msgId, null);
         }
         else {
-            client = this.logic();
-        }
-        if (client != null) {
-            client.sendEmpty(msgId);
+            this.logicSendMessage(msgId, null);
         }
     };
     ClientManager.clientManager = null;
@@ -206,7 +221,12 @@ var NetworkManager = /** @class */ (function () {
         });
         console.log(message);
     };
-    NetworkManager.prototype.lookup = function (massageName, massageContent) {
+    /**
+     * 序列化 protocol-buffer
+     * @param massageName
+     * @param massageContent
+     */
+    NetworkManager.prototype.Serialize = function (massageName, massageContent) {
         var MessageBody = NetworkManager.protoRoot.lookup(massageName);
         // Create a new message
         var message = MessageBody.create(massageContent);
@@ -221,14 +241,32 @@ var NetworkManager = /** @class */ (function () {
         return buffer;
     };
     /**
+     * 反序列化 protocol-buffer
+     * @param massageName
+     * @param netPackage NetPackage
+     */
+    NetworkManager.prototype.Deserialize = function (massageName, netPackage) {
+        var MessageBody = NetworkManager.protoRoot.lookup(massageName);
+        // Decode an Uint8Array (browser) or Buffer (node) to a message
+        var message = MessageBody.decode(netPackage.msg);
+    };
+    /**
      * 发送消息
      * @param massageID 消息ID
      * @param massageName 消息名称--PBMassage.GM_VerifyVersion
      * @param massageContent 消息结体--PBMassage.GM_VerifyVersion = { version: "1", platform:1, istest:3 }
      */
-    NetworkManager.prototype.sendMessage = function (massageID, massageName, massageContent) {
-        var buffer = this.lookup(massageName, massageContent);
-        ClientManager_1.default.getSingleton().logic().sendByte(massageID, buffer);
+    NetworkManager.prototype.loginSendMessage = function (massageID, massageName, massageContent) {
+        var buffer = this.Deserialize(massageName, massageContent);
+        ClientManager_1.default.getSingleton().loginSendMessage(massageID, buffer);
+    };
+    NetworkManager.prototype.logicSendMessage = function (massageID, massageName, massageContent) {
+        var buffer = this.Deserialize(massageName, massageContent);
+        ClientManager_1.default.getSingleton().logicSendMessage(massageID, buffer);
+    };
+    NetworkManager.prototype.sceneSendMessage = function (massageID, massageName, massageContent) {
+        var buffer = this.Deserialize(massageName, massageContent);
+        ClientManager_1.default.getSingleton().sceneSendMessage(massageID, buffer);
     };
     NetworkManager.protoRoot = null;
     return NetworkManager;
