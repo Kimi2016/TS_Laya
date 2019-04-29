@@ -1,3 +1,5 @@
-2019/04/28-07:47:42.547 3ba8 Reusing MANIFEST F:\GitHub\Laya\TS_Laya\TS_MyLaya\.laya\chrome\Default\Site Characteristics Database/MANIFEST-000001
-2019/04/28-07:47:42.547 3ba8 Recovering log #3
-2019/04/28-07:47:42.547 3ba8 Reusing old log F:\GitHub\Laya\TS_Laya\TS_MyLaya\.laya\chrome\Default\Site Characteristics Database/000003.log 
+2019/04/28-15:20:46.625 884 Log #3: 1 ops saved to Table #4 OK
+2019/04/28-15:20:46.627 884 Archiving E:\LayaProject\TS_Laya\TS_Laya\TS_MyLaya\.laya\chrome\Default\Site Characteristics Database/000003.log: OK
+2019/04/28-15:20:46.627 884 Table #4: 1 entries OK
+2019/04/28-15:20:46.728 884 Archiving E:\LayaProject\TS_Laya\TS_Laya\TS_MyLaya\.laya\chrome\Default\Site Characteristics Database/MANIFEST-000001: OK
+2019/04/28-15:20:46.924 884 **** Repaired leveldb E:\LayaProject\TS_Laya\TS_Laya\TS_MyLaya\.laya\chrome\Default\Site Characteristics Database; recovered 1 files; 130 bytes. Some data may have been lost. ****

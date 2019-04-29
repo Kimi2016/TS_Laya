@@ -2,7 +2,7 @@
     "copyFilesFilter": [
         "../bin/**/*.*"
     ],
-    "openDataZone": true,
+    "openDataZone": false,
     "compressJson": false,
     "compressJsonFilter": [
         "$basePath/**/*.{json,atlas}"
@@ -56,5 +56,5 @@
     "compile": true,
     "onlyIndexJS": true,
     "projectType": "ts",
-    "pubTime": 1556408899848
+    "pubTime": 1556432784921
 }

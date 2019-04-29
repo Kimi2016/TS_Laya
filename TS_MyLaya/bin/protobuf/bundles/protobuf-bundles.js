@@ -132,7 +132,7 @@ $root.PBMessage = (function() {
          * @memberof PBMessage
          * @interface IGM_VerifyVersion
          * @property {string} version GM_VerifyVersion version
-         * @property {number} platform 平台
+         * @property {number|Long} platform 平台
          * @property {number|null} [istest] 0、正常，1、测试，不需要验证版本
          */
 
@@ -161,11 +161,11 @@ $root.PBMessage = (function() {
 
         /**
          * 平台
-         * @member {number} platform
+         * @member {number|Long} platform
          * @memberof PBMessage.GM_VerifyVersion
          * @instance
          */
-        GM_VerifyVersion.prototype.platform = 0;
+        GM_VerifyVersion.prototype.platform = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
 
         /**
          * 0、正常，1、测试，不需要验证版本
@@ -200,7 +200,7 @@ $root.PBMessage = (function() {
             if (!writer)
                 writer = $Writer.create();
             writer.uint32(/* id 1, wireType 2 =*/10).string(message.version);
-            writer.uint32(/* id 2, wireType 0 =*/16).int32(message.platform);
+            writer.uint32(/* id 2, wireType 0 =*/16).int64(message.platform);
             if (message.istest != null && message.hasOwnProperty("istest"))
                 writer.uint32(/* id 3, wireType 0 =*/24).int32(message.istest);
             return writer;
@@ -228,7 +228,7 @@ $root.PBMessage = (function() {
                     message.version = reader.string();
                     break;
                 case 2:
-                    message.platform = reader.int32();
+                    message.platform = reader.int64();
                     break;
                 case 3:
                     message.istest = reader.int32();
@@ -258,8 +258,8 @@ $root.PBMessage = (function() {
                 return "object expected";
             if (!$util.isString(message.version))
                 return "version: string expected";
-            if (!$util.isInteger(message.platform))
-                return "platform: integer expected";
+            if (!$util.isInteger(message.platform) && !(message.platform && $util.isInteger(message.platform.low) && $util.isInteger(message.platform.high)))
+                return "platform: integer|Long expected";
             if (message.istest != null && message.hasOwnProperty("istest"))
                 if (!$util.isInteger(message.istest))
                     return "istest: integer expected";
@@ -275,7 +275,7 @@ $root.PBMessage = (function() {
          * Properties of a GM_VerifyVersionReturn.
          * @memberof PBMessage
          * @interface IGM_VerifyVersionReturn
-         * @property {number} result GM_VerifyVersionReturn result
+         * @property {number|Long} result GM_VerifyVersionReturn result
          * @property {string} serverversion GM_VerifyVersionReturn serverversion
          * @property {number|null} [serverFlag] GM_VerifyVersionReturn serverFlag
          * @property {string|null} [url] GM_VerifyVersionReturn url
@@ -298,11 +298,11 @@ $root.PBMessage = (function() {
 
         /**
          * GM_VerifyVersionReturn result.
-         * @member {number} result
+         * @member {number|Long} result
          * @memberof PBMessage.GM_VerifyVersionReturn
          * @instance
          */
-        GM_VerifyVersionReturn.prototype.result = 0;
+        GM_VerifyVersionReturn.prototype.result = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
 
         /**
          * GM_VerifyVersionReturn serverversion.
@@ -352,7 +352,7 @@ $root.PBMessage = (function() {
         GM_VerifyVersionReturn.encode = function encode(message, writer) {
             if (!writer)
                 writer = $Writer.create();
-            writer.uint32(/* id 1, wireType 0 =*/8).int32(message.result);
+            writer.uint32(/* id 1, wireType 0 =*/8).int64(message.result);
             writer.uint32(/* id 2, wireType 2 =*/18).string(message.serverversion);
             if (message.serverFlag != null && message.hasOwnProperty("serverFlag"))
                 writer.uint32(/* id 3, wireType 0 =*/24).int32(message.serverFlag);
@@ -380,7 +380,7 @@ $root.PBMessage = (function() {
                 var tag = reader.uint32();
                 switch (tag >>> 3) {
                 case 1:
-                    message.result = reader.int32();
+                    message.result = reader.int64();
                     break;
                 case 2:
                     message.serverversion = reader.string();
@@ -414,8 +414,8 @@ $root.PBMessage = (function() {
         GM_VerifyVersionReturn.verify = function verify(message) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (!$util.isInteger(message.result))
-                return "result: integer expected";
+            if (!$util.isInteger(message.result) && !(message.result && $util.isInteger(message.result.low) && $util.isInteger(message.result.high)))
+                return "result: integer|Long expected";
             if (!$util.isString(message.serverversion))
                 return "serverversion: string expected";
             if (message.serverFlag != null && message.hasOwnProperty("serverFlag"))

@@ -23,6 +23,7 @@ import Test_0_1_Channel from './study/Test_0_1_Channel';
 import Test_0_1_Socket from './study/Test_0_1_Socket';
 import Test_0_Network_ProtocolBuffer from './study/Test_0_Network_ProtocolBuffer';
 import NetworkManager from './Framework/Network/NetworkManager';
+import ClientManager from './Framework/Network/ClientManager';
 
 //启动类
 class AppMain {
@@ -41,15 +42,15 @@ class AppMain {
 
 
         //打开调试面板（通过IDE设置调试模式，或者url地址增加debug=true参数，均可打开调试面板）
-		if (GameConfig.debug || Laya.Utils.getQueryString("debug") == "true") Laya.enableDebugPanel();
-		if (GameConfig.physicsDebug && Laya["PhysicsDebugDraw"]) Laya["PhysicsDebugDraw"].enable();
+        if (GameConfig.debug || Laya.Utils.getQueryString("debug") == "true") Laya.enableDebugPanel();
+        if (GameConfig.physicsDebug && Laya["PhysicsDebugDraw"]) Laya["PhysicsDebugDraw"].enable();
         if (GameConfig.stat) Laya.Stat.show();
-        
-        //表示是否捕获全局错误并弹出提示。
-		Laya.alertGlobalError = true; 
 
-		//激活资源版本控制，version.json由IDE发布功能自动生成，如果没有也不影响后续流程
-		Laya.ResourceVersion.enable("version.json", Laya.Handler.create(this, this.onVersionLoaded), Laya.ResourceVersion.FILENAME_VERSION);
+        //表示是否捕获全局错误并弹出提示。
+        Laya.alertGlobalError = true;
+
+        //激活资源版本控制，version.json由IDE发布功能自动生成，如果没有也不影响后续流程
+        Laya.ResourceVersion.enable("version.json", Laya.Handler.create(this, this.onVersionLoaded), Laya.ResourceVersion.FILENAME_VERSION);
 
 
         Laya.stage.alignV = Stage.ALIGN_MIDDLE;
@@ -70,19 +71,16 @@ class AppMain {
     }
 
     onVersionLoaded(): void {
-		//激活大小图映射，加载小图的时候，如果发现小图在大图合集里面，则优先加载大图合集，而不是小图
-		Laya.AtlasInfoManager.enable("fileconfig.json", Laya.Handler.create(this, this.onConfigLoaded));
-	}
+        //激活大小图映射，加载小图的时候，如果发现小图在大图合集里面，则优先加载大图合集，而不是小图
+        Laya.AtlasInfoManager.enable("fileconfig.json", Laya.Handler.create(this, this.onConfigLoaded));
+    }
 
-	onConfigLoaded(): void {
-        //初始Protobuf
-        //NetworkManager.getInstance();
-
-		//加载IDE指定的场景
+    onConfigLoaded(): void {
+        //加载IDE指定的场景
         GameConfig.startScene && Laya.Scene.open(GameConfig.startScene);
-        
+
         this.setup();
-	}
+    }
 
     private setup(): void {
         //new Test_1_Text();
@@ -102,7 +100,7 @@ class AppMain {
         //new Test_9_TimeLineUI();
         //new Test_11_Sound();
         //new Test_0_1_Socket();
-        new Test_0_Network_ProtocolBuffer();
+        //new Test_0_Network_ProtocolBuffer();
     }
 }
 

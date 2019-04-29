@@ -1,3 +1,4 @@
+import SocketConnect from "./SocketConnect";
 
 //import * as Collections from 'typescript-collections'; //import Collections = require('typescript-collections');
 
@@ -19,12 +20,12 @@ class GameClient {
     }
 
     public connect(host: string, port: number): void {
-        this.socketConnect = new SocketConnect("clientId:" + this.clientId);
+        this.socketConnect = new SocketConnect(" clientId:" + this.clientId);
         this.socketConnect.connect(host, port);
     }
 
     public connectByUrl(url: string): void {
-        this.socketConnect = new SocketConnect("clientId:" + this.clientId);
+        this.socketConnect = new SocketConnect(" clientId:" + this.clientId);
         this.socketConnect.connectByUrl(url);
     }
 
@@ -40,63 +41,86 @@ class GameClient {
         return this.socketConnect.connected();
     }
 
-    public sendEmpty(msgId: GameMessage): void {
+    public sendEmpty(msgId: number): void {
         this.socketConnect.sendEmpty(msgId);
     }
 
-    public sendMassage(msgId: GameMessage, content: string | Laya.Byte): void {
-        if (content as string) {
-            this.socketConnect.sendString(msgId, content as string);
-        }
-        else {
-            this.socketConnect.sendByte(msgId, content as Laya.Byte);
-        }
+    public sendString(msgId: number, content: string): void {
+        this.socketConnect.sendString(msgId, content as string);
+    }
+
+    public sendByte(msgId: number, content: any): void {
+        this.socketConnect.sendByte(msgId, content);
     }
 }
 
 
 export default class ClientManager {
     private gameClientDic: { [index: number]: GameClient; } = {};
-    private static clientManager: ClientManager = null;
+    private static instance: ClientManager = null;
 
-    public static getSingleton(): ClientManager {
-        if (!this.clientManager) {
-            this.clientManager = new ClientManager();
+    public static getInstance(): ClientManager {
+        return this.instance || (this.instance = new this());
+    }
+
+    private constructor() { }
+
+    public createClient(clientID: number, url: string): GameClient {
+        var client: GameClient = new GameClient(clientID);
+        client.connectByUrl(url);
+        this.gameClientDic[ClientID.login] = client;
+        return client;
+    }
+    public closeClient(clientID: ClientID): void {
+        let client: GameClient = this.getClient(ClientID.login)
+        if (client) {
+            client.disConnect()
         }
-        return this.clientManager;
     }
-
-    private constructor() {
+    public reConnect(clientID: ClientID): void {
+        let client: GameClient = this.getClient(ClientID.login)
+        if (client) {
+            client.reConnect()
+        }
     }
-
-    private GetClient(id: ClientID): GameClient {
-        if (this.gameClientDic[id] != null) {
-            return this.gameClientDic[id];
+    public getClient(clientID: ClientID): GameClient {
+        if (this.gameClientDic[clientID] != null) {
+            return this.gameClientDic[clientID];
         }
         return null;
     }
 
-    public loginSendMessage(msgId: GameMessage, content: Laya.Byte): void {
-        let client: GameClient = this.GetClient(ClientID.login)
-        if (!client) {
-            client.sendMassage(msgId, content)
+    public loginSendMessage(msgId: number, content: Laya.Byte): void {
+        let client: GameClient = this.getClient(ClientID.login)
+        if (client) {
+            client.sendByte(msgId, content)
         }
     }
-
-    public logicSendMessage(msgId: GameMessage, content: Laya.Byte): void {
-        let client: GameClient = this.GetClient(ClientID.logic)
-        if (!client) {
-            client.sendMassage(msgId, content)
+    public logicSendMessage(msgId: number, content: Laya.Byte): void {
+        let client: GameClient = this.getClient(ClientID.logic)
+        if (client) {
+            client.sendByte(msgId, content)
         }
     }
-
-    public sceneSendMessage(msgId: GameMessage, content: Laya.Byte): void {
-        let client: GameClient = this.GetClient(ClientID.scene)
-        if (!client) {
-            client.sendMassage(msgId, content)
+    public sceneSendMessage(msgId: number, content: Laya.Byte): void {
+        let client: GameClient = this.getClient(ClientID.scene)
+        if (client) {
+            client.sendByte(msgId, content)
         }
     }
-
+    public sendMessageEmpty(msgId: number): void {
+        let client: GameClient = null;
+        if (msgId > GameMessage.GM_ACCOUNT_SERVER_MESSAGE_START && msgId < GameMessage.GM_ACCOUNT_SERVER_MESSAGE_END) {
+            client = this.getClient(ClientID.login)
+        }
+        else {
+            client = this.getClient(ClientID.logic)
+        }
+        if (client) {
+            client.sendEmpty(msgId)
+        }
+    }
+    
     public clearAllGameClient() {
         let dic = this.gameClientDic
         for (const key in dic) {
@@ -108,12 +132,4 @@ export default class ClientManager {
         this.gameClientDic = {}
     }
 
-    public sendMessageEmpty(msgId: GameMessage): void {
-        if (msgId > GameMessage.GM_ACCOUNT_SERVER_MESSAGE_START && msgId < GameMessage.GM_ACCOUNT_SERVER_MESSAGE_END) {
-            this.loginSendMessage(msgId, null);
-        }
-        else {
-            this.logicSendMessage(msgId, null);
-        }
-    }
 }

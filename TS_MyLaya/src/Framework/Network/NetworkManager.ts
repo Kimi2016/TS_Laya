@@ -1,12 +1,10 @@
 import ClientManager from "./ClientManager";
-import Browser = Laya.Browser
+import NetPacket from "./NetPacket";
 
 export default class NetworkManager {
 
     private static instance: NetworkManager;
-    private protoBuf: any = Browser.window.protobuf;
-    private static protoRoot: any = null;
-    private protofilePath: string = "./protobuf/protofile.proto";
+    private protoRoot: any = null;
 
     public static getInstance(): NetworkManager {
         if (!this.instance) {
@@ -16,70 +14,25 @@ export default class NetworkManager {
     }
 
     private constructor() {
-        //this.loadProtofile();
+        this.protoRoot = Laya.Browser.window["PBMessage"];
     }
 
-    private loadProtofile(): void {
-        this.protoBuf.load(this.protofilePath, this.onAssetsLoaded);
-    }
-
-    private onAssetsLoaded(err: any, root: any): void {
-        if (err) {
-            throw err;
-        }
-        NetworkManager.protoRoot = root;
-
-        // Obtain a message type
-        var AwesomeMessage: any = root.lookup("PBMessage.AwesomeMessage");
-
-        // Create a new message
-        var message: any = AwesomeMessage.create(
-            {
-                awesome_field: "AwesomeString"
-            });
-
-        console.log(message);
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-    private lookup(massageName: string, massageContent: any): any {
-        var MessageBody = NetworkManager.protoRoot.lookup(massageName)
-
-        // Create a new message
-        var message: any = MessageBody.create(massageContent);
-
-        // Verify the message if necessary (i.e. when possibly incomplete or invalid)
-        var errMsg: any = MessageBody.verify(message);
-        if (errMsg) {
-            throw Error(errMsg);
-        }
-
-        // Encode a message to an Uint8Array (browser) or Buffer (node)
-        var buffer: any = MessageBody.encode(message).finish();
-        // ... do something with buffer
-
-        return buffer
+    /**
+     * 获取角色ID
+     */
+    public getRoleId(): number {
+        return Math.pow(2, 53) - 1;
     }
 
     /**
      * 序列化 protocol-buffer
      * @param massageName 
-     * @param massageContent 
+     * @param massage
      */
-    public serialize(massageName: string, massageContent: any): any {
-        return this.lookup(massageName, massageContent);
+    public serialize(massageName: string, massage: any): any {
+        // Encode a message to an Uint8Array (browser) or Buffer (node)
+        var buffer: any = this.protoRoot[massageName].encode(massage).finish();
+        return buffer;
     }
 
     /**
@@ -87,30 +40,31 @@ export default class NetworkManager {
      * @param massageName 
      * @param netPackage NetPackage
      */
-    public deserialize(massageName: string, netPackage: any)  {
-        var MessageBody = NetworkManager.protoRoot.lookup(massageName)
+    public deserialize(massageName: string, netPackage: NetPacket): any {
         // Decode an Uint8Array (browser) or Buffer (node) to a message
-        var message: any = MessageBody.decode(netPackage.msg);
+        var message: any = this.protoRoot[massageName].decode(netPackage.body);
+        return message;
     }
 
     /**
      * 发送消息
-     * @param massageID 消息ID
-     * @param massageName 消息名称--PBMassage.GM_VerifyVersion
-     * @param massageContent 消息结体--PBMassage.GM_VerifyVersion = { version: "1", platform:1, istest:3 }
+     * @param msgID ID
+     * @param msgName GM_VerifyVersion
+     * @param massage
+     * var msg = { version: "1", platform:1, istest:3 } 或 var msg = new PBMassage.GM_VerifyVersion(); msg.version = "1"; msg.platform = 1; msg.istest = 1;
      */
-    public loginSendMessage(massageID: any, massageName: any, massageContent: any): void {
-        var buffer: any = this.serialize(massageName, massageContent);
-        ClientManager.getSingleton().loginSendMessage(massageID, buffer);
+    public loginSendMessage(msgID: number, msgName: string, massage: any): void {
+        var buffer: any = this.serialize(msgName, massage);
+        ClientManager.getInstance().loginSendMessage(msgID, buffer);
     }
 
-    public logicSendMessage(massageID: any, massageName: any, massageContent: any): void {
-        var buffer: any = this.serialize(massageName, massageContent);
-        ClientManager.getSingleton().logicSendMessage(massageID, buffer);
+    public logicSendMessage(msgID: number, msgName: string, massage: any): void {
+        var buffer: any = this.serialize(msgName, massage);
+        ClientManager.getInstance().logicSendMessage(msgID, buffer);
     }
 
-    public sceneSendMessage(massageID: any, massageName: any, massageContent: any): void {
-        var buffer: any = this.serialize(massageName, massageContent);
-        ClientManager.getSingleton().sceneSendMessage(massageID, buffer);
+    public sceneSendMessage(msgID: number, msgName: string, massage: any): void {
+        var buffer: any = this.serialize(msgName, massage);
+        ClientManager.getInstance().sceneSendMessage(msgID, buffer);
     }
 }
