@@ -45,18 +45,14 @@ class GameClient {
         this.socketConnect.sendEmpty(msgId);
     }
 
-    public sendString(msgId: number, content: string): void {
-        this.socketConnect.sendString(msgId, content as string);
-    }
-
-    public sendByte(msgId: number, content: any): void {
-        this.socketConnect.sendByte(msgId, content);
+    public sendMessage(msgId: number, msg: any): void {
+        this.socketConnect.sendMessage(msgId, msg);
     }
 }
 
 
 export default class ClientManager {
-    private gameClientDic: { [index: number]: GameClient; } = {};
+    private gameClientMap: { [index: number]: GameClient; } = {};
     private static instance: ClientManager = null;
 
     public static getInstance(): ClientManager {
@@ -68,7 +64,7 @@ export default class ClientManager {
     public createClient(clientID: number, url: string): GameClient {
         var client: GameClient = new GameClient(clientID);
         client.connectByUrl(url);
-        this.gameClientDic[ClientID.login] = client;
+        this.gameClientMap[ClientID.login] = client;
         return client;
     }
     public closeClient(clientID: ClientID): void {
@@ -84,28 +80,28 @@ export default class ClientManager {
         }
     }
     public getClient(clientID: ClientID): GameClient {
-        if (this.gameClientDic[clientID] != null) {
-            return this.gameClientDic[clientID];
+        if (this.gameClientMap[clientID] != null) {
+            return this.gameClientMap[clientID];
         }
         return null;
     }
 
-    public loginSendMessage(msgId: number, content: Laya.Byte): void {
+    public loginSendMessage(msgId: number, msg: Laya.Byte): void {
         let client: GameClient = this.getClient(ClientID.login)
         if (client) {
-            client.sendByte(msgId, content)
+            client.sendMessage(msgId, msg)
         }
     }
-    public logicSendMessage(msgId: number, content: Laya.Byte): void {
+    public logicSendMessage(msgId: number, msg: Laya.Byte): void {
         let client: GameClient = this.getClient(ClientID.logic)
         if (client) {
-            client.sendByte(msgId, content)
+            client.sendMessage(msgId, msg)
         }
     }
-    public sceneSendMessage(msgId: number, content: Laya.Byte): void {
+    public sceneSendMessage(msgId: number, msg: Laya.Byte): void {
         let client: GameClient = this.getClient(ClientID.scene)
         if (client) {
-            client.sendByte(msgId, content)
+            client.sendMessage(msgId, msg)
         }
     }
     public sendMessageEmpty(msgId: number): void {
@@ -122,14 +118,14 @@ export default class ClientManager {
     }
     
     public clearAllGameClient() {
-        let dic = this.gameClientDic
+        let dic = this.gameClientMap
         for (const key in dic) {
             if (dic.hasOwnProperty(key)) {
                 const element = dic[key];
                 element.disConnect();
             }
         }
-        this.gameClientDic = {}
+        this.gameClientMap = {}
     }
 
 }
