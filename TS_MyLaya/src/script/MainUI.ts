@@ -13,13 +13,15 @@ export default class MainUI extends ui.MainSceneUI {
     onEnable(): void {
         console.log("MainUI.onEnable")
 
-        NetEventDispatcher.getInstance().RegisterMessage(GameMessage.GM_VERSION_RETURN, this.GM_VerifyVersionReturn)
+        console.log(PBID.GM_VERSION_RETURN.toString());
+        
+        NetEventDispatcher.getInstance().RegisterMessage(PBID.GM_VERSION_RETURN, this.GM_VerifyVersionReturn)//
     }
 
     onDisable(): void {
         console.log("MainUI.onDisable")
         
-        NetEventDispatcher.getInstance().UnRegisterMessage(GameMessage.GM_VERSION_RETURN, this.GM_VerifyVersionReturn)
+        NetEventDispatcher.getInstance().UnRegisterMessage(PBID.GM_VERSION_RETURN, this.GM_VerifyVersionReturn)//
     }
 
 
@@ -45,6 +47,6 @@ export default class MainUI extends ui.MainSceneUI {
             platform: 9007199254740991,             ///平台
             istest: 0,///    0、正常，1、测试，不需要验证版本
         }
-        NetworkManager.getInstance().loginSendMessage(GameMessage.GM_VERIFY_VERSION,  msg);
+        NetworkManager.getInstance().loginSendMessage(PBID.GM_VERIFY_VERSION,  msg);
     }
 }

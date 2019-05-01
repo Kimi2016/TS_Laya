@@ -68,6 +68,9 @@ class AppMain {
 
         //消除矢量绘制的锯齿，但会增加性能消耗
         //Config.isAntialias=true;
+
+        //销毁当前没有被使用的资源,该函数会忽略lock=true的资源。
+        Laya.Resource.destroyUnusedResources();
     }
 
     onVersionLoaded(): void {

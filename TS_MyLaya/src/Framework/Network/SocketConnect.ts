@@ -1,7 +1,7 @@
 import NetEventDispatcher from "../Event/NetEventDispatcher"
 import NetPacket from "./NetPacket"
 import NetworkManager from "./NetworkManager"
-import PBMessageName from "./PBMessageName";
+import PBMessageName from "./PBName";
 
 
 export default class SocketConnect {
@@ -65,7 +65,7 @@ export default class SocketConnect {
     }
     //正确建立连接
     private openHandler(event: any = null): void {
-        //console.log(this.url + this.tips + "  正确建立连接")
+        console.log(this.url + this.tips + "  正确建立连接")
     }
     //关闭连接事件
     private closeHandler(event: any = null): void {

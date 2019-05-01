@@ -106,7 +106,7 @@ export default class ClientManager {
     }
     public sendMessageEmpty(msgId: number): void {
         let client: GameClient = null;
-        if (msgId > GameMessage.GM_ACCOUNT_SERVER_MESSAGE_START && msgId < GameMessage.GM_ACCOUNT_SERVER_MESSAGE_END) {
+        if (msgId > PBID.GM_ACCOUNT_SERVER_MESSAGE_START && msgId < PBID.GM_ACCOUNT_SERVER_MESSAGE_END) {
             client = this.getClient(ClientID.login)
         }
         else {
@@ -116,7 +116,7 @@ export default class ClientManager {
             client.sendEmpty(msgId)
         }
     }
-    
+
     public clearAllGameClient() {
         let dic = this.gameClientMap
         for (const key in dic) {
