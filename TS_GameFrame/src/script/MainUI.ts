@@ -1,6 +1,5 @@
 import { ui } from "../ui/layaMaxUI";
 import NetworkManager from "../Framework/Network/NetworkManager";
-import ClientManager from "../Framework/Network/ClientManager";
 import NetEventDispatcher from "../Framework/Event/NetEventDispatcher";
 import NetPacket from "../Framework/Network/NetPacket";
 import PBName from "../Framework/Network/PBName";
@@ -45,7 +44,7 @@ export default class MainUI extends ui.MainSceneUI {
         //var buffer: any = root[mapName[210]].encode(msg).finish();
         //console.log(buffer);
          
-        ClientManager.getInstance().createClient(0, "ws://192.168.2.126:50000");
+        NetworkManager.getInstance().createClient(0, "ws://192.168.2.126:50000");
 
         //定时执行一次(间隔时间)
         Laya.timer.once(2000, this, this.testNetwork);

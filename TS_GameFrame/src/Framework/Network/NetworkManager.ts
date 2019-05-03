@@ -1,4 +1,51 @@
-import ClientManager from "./ClientManager";
+import SocketConnect from "./SocketConnect";
+enum ClientID {
+    login = 0,
+    logic,
+    scene,
+    recordChat,
+}
+
+
+class GameClient {
+    private clientId: ClientID;
+    private socketConnect: SocketConnect;
+
+    constructor(id: ClientID) {
+        this.clientId = id;
+    }
+
+    public connect(host: string, port: number): void {
+        this.socketConnect = new SocketConnect(" clientId:" + this.clientId);
+        this.socketConnect.connect(host, port);
+    }
+
+    public connectByUrl(url: string): void {
+        this.socketConnect = new SocketConnect(" clientId:" + this.clientId);
+        this.socketConnect.connectByUrl(url);
+    }
+
+    public reconnection(): void {
+        this.socketConnect.reconnection();
+    }
+
+    public disconnected(): void {
+        this.socketConnect.disconnected();
+    }
+
+    public isConnected(): boolean {
+        return this.socketConnect.connected();
+    }
+
+    public sendEmpty(msgId: number): void {
+        this.socketConnect.sendEmpty(msgId);
+    }
+
+    public sendMessage(msgId: number, msg: any): void {
+        this.socketConnect.sendMessage(msgId, msg);
+    }
+}
+
 
 export default class NetworkManager {
     private static instance: NetworkManager;
@@ -6,6 +53,8 @@ export default class NetworkManager {
     public static getInstance(): NetworkManager {
         return this.instance || (this.instance = new this())
     }
+
+    private gameClientMap: { [index: number]: GameClient; } = {};
 
     private constructor() { }
 
@@ -16,21 +65,74 @@ export default class NetworkManager {
         return Math.pow(2, 53) - 1;
     }
 
-    /**
-     * 发送消息
-     * @param msgID
-     * @param massage
-     * var msg = { version: "1", platform:1, istest:3 } 或 var msg = new PBMassage.GM_VerifyVersion(); msg.version = "1"; msg.platform = 1; msg.istest = 1;
-     */
-    public loginSendMessage(msgID: number, massage: any): void {
-        ClientManager.getInstance().loginSendMessage(msgID, massage);
+    public createClient(clientID: number, url: string): GameClient {
+        var client: GameClient = new GameClient(clientID);
+        client.connectByUrl(url);
+        this.gameClientMap[ClientID.login] = client;
+        return client;
     }
 
-    public logicSendMessage(msgID: number, massage: any): void {
-        ClientManager.getInstance().logicSendMessage(msgID, massage);
+    public getClient(clientID: ClientID): GameClient {
+        if (this.gameClientMap[clientID] != null) {
+            return this.gameClientMap[clientID];
+        }
+        return null;
     }
 
-    public sceneSendMessage(msgID: number, massage: any): void {
-        ClientManager.getInstance().sceneSendMessage(msgID, massage);
+    public closeClient(clientID: ClientID): void {
+        let client: GameClient = this.getClient(ClientID.login)
+        if (client) {
+            client.disconnected()
+        }
+    }
+
+    public reConnect(clientID: ClientID): void {
+        let client: GameClient = this.getClient(ClientID.login)
+        if (client) {
+            client.reconnection()
+        }
+    }
+
+    public loginSendMessage(msgId: number, msg: any): void {
+        this.sendMessage(msgId, msg, ClientID.login)
+    }
+
+    public logicSendMessage(msgId: number, msg: any): void {
+        this.sendMessage(msgId, msg, ClientID.logic)
+    }
+
+    public sceneSendMessage(msgId: number, msg: any): void {
+        this.sendMessage(msgId, msg, ClientID.scene)
+    }
+
+    private sendMessage(msgId: number, msg: any, clientID: ClientID): void {
+        let client: GameClient = this.getClient(clientID)
+        if (client) {
+            client.sendMessage(msgId, msg)
+        }
+    }
+
+    public sendMessageEmpty(msgId: number): void {
+        let client: GameClient = null;
+        if (msgId > PBID.GM_ACCOUNT_SERVER_MESSAGE_START && msgId < PBID.GM_ACCOUNT_SERVER_MESSAGE_END) {
+            client = this.getClient(ClientID.login)
+        }
+        else {
+            client = this.getClient(ClientID.logic)
+        }
+        if (client) {
+            client.sendEmpty(msgId)
+        }
+    }
+
+    public clearAllGameClient() {
+        let dic = this.gameClientMap
+        for (const key in dic) {
+            if (dic.hasOwnProperty(key)) {
+                const element = dic[key];
+                element.disconnected();
+            }
+        }
+        this.gameClientMap = {}
     }
 }

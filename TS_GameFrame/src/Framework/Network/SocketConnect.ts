@@ -52,11 +52,13 @@ export default class SocketConnect {
         this.socket.on(Laya.Event.CLOSE, this, this.closeHandler)
         this.socket.on(Laya.Event.ERROR, this, this.errorHandler)
     }
-    public reConnect() {
+    //重新连接
+    public reconnection() {
         this.socket.cleanSocket()
         this.connectByUrl(this.url)
     }
-    public disConnect() {
+    //断开连接
+    public disconnected() {
         this.socket.close()
     }
     //是否连接
@@ -84,27 +86,28 @@ export default class SocketConnect {
         this.tempBytes.clear()
     }
 
-    //发送字符串格式
-    public sendString(msgId: number, content: string): void {
-        this.tempBytes.writeUTFString(content)
-        this.send(msgId, this.tempBytes)
-        //清除掉数据，方便下次读写
-        this.tempBytes.clear()
-    }
-
     //发送消息
     public sendMessage(msgId: number, msg: any): void {
-        let buffer: Uint8Array = this.serialize(msgId, msg)
-        this.tempBytes.writeArrayBuffer(buffer)
-        this.send(msgId, this.tempBytes)
-        //清除掉数据，方便下次读写
-        this.tempBytes.clear()
+        //if (typeof msg == "string") {
+        //    this.tempBytes.writeUTFString(msg)
+        //    this.send(msgId, this.tempBytes)
+        //}
+        //else if (msg instanceof ArrayBuffer) {
+        //    this.tempBytes.writeArrayBuffer(buffer)
+        //    this.send(msgId, this.tempBytes)
+        //}
+        //else
+        {
+            let buffer: Uint8Array = this.serialize(msgId, msg)
+            this.tempBytes.writeArrayBuffer(buffer)
+            this.send(msgId, this.tempBytes)
+        }
     }
 
     //需要发送的数据
     private send(msgId: number, byte: Laya.Byte): void {
         if (!this.socket.connected) {
-            console.log("connected:" + this.socket.connected)
+            console.log("The connection has been disconnected.")
             return
         }
         //WEBPACK_HEAD_OFFSET
@@ -119,6 +122,7 @@ export default class SocketConnect {
         this.socket.send(this.sendBytes.buffer)
         //清除掉数据，方便下次读写
         this.sendBytes.clear()
+        this.tempBytes.clear()
     }
 
     //接收到数据
@@ -141,6 +145,7 @@ export default class SocketConnect {
         var buffer: any = this.protoRoot[massageName].encode(massage).finish();
         return buffer;
     }
+
     /**
      * 反序列化 protocol-buffer
      * @param massageName 
