@@ -1,7 +1,7 @@
 import NetEventDispatcher from "../Event/NetEventDispatcher"
 import NetPacket from "./NetPacket"
 import NetworkManager from "./NetworkManager"
-import PBMessageName from "./PBName";
+import GameMessageName from "./GameMessageName";
 
 
 export default class SocketConnect {
@@ -35,7 +35,7 @@ export default class SocketConnect {
         //this.receiveNetPacket = new Array<NetPacket>() //接收的网络包
 
         this.protoRoot = Laya.Browser.window["PBMessage"]
-        this.pbMessageName = PBMessageName.getMap()
+        this.pbMessageName = GameMessageName.getMap()
     }
     public connect(host: string, port: number): void {
         this.url = host.concat(port.toString())
@@ -53,7 +53,7 @@ export default class SocketConnect {
         this.socket.on(Laya.Event.ERROR, this, this.errorHandler)
     }
     //重新连接
-    public reconnection() {
+    public reconnect() {
         this.socket.cleanSocket()
         this.connectByUrl(this.url)
     }

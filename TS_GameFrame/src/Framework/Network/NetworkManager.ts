@@ -1,11 +1,4 @@
 import SocketConnect from "./SocketConnect";
-enum ClientID {
-    login = 0,
-    logic,
-    scene,
-    recordChat,
-}
-
 
 class GameClient {
     private clientId: ClientID;
@@ -25,8 +18,8 @@ class GameClient {
         this.socketConnect.connectByUrl(url);
     }
 
-    public reconnection(): void {
-        this.socketConnect.reconnection();
+    public reconnect(): void {
+        this.socketConnect.reconnect();
     }
 
     public disconnected(): void {
@@ -86,10 +79,10 @@ export default class NetworkManager {
         }
     }
 
-    public reConnect(clientID: ClientID): void {
+    public reconnectClient(clientID: ClientID): void {
         let client: GameClient = this.getClient(ClientID.login)
         if (client) {
-            client.reconnection()
+            client.reconnect()
         }
     }
 
@@ -114,7 +107,7 @@ export default class NetworkManager {
 
     public sendMessageEmpty(msgId: number): void {
         let client: GameClient = null;
-        if (msgId > PBID.GM_ACCOUNT_SERVER_MESSAGE_START && msgId < PBID.GM_ACCOUNT_SERVER_MESSAGE_END) {
+        if (msgId > GameMessage.GM_ACCOUNT_SERVER_MESSAGE_START && msgId < GameMessage.GM_ACCOUNT_SERVER_MESSAGE_END) {
             client = this.getClient(ClientID.login)
         }
         else {
