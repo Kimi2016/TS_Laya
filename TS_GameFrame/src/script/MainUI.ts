@@ -15,13 +15,13 @@ export default class MainUI extends ui.MainSceneUI {
 
         console.log(GameMessage.GM_VERSION_RETURN);
         
-        NetEventDispatcher.getInstance().RegisterMessage(GameMessage.GM_VERSION_RETURN, this.GM_VerifyVersionReturn)//
+        NetEventDispatcher.getInstance().registerMessage(GameMessage.GM_VERSION_RETURN, this.GM_VerifyVersionReturn)//
     }
 
     onDisable(): void {
         console.log("MainUI.onDisable")
         
-        NetEventDispatcher.getInstance().UnRegisterMessage(GameMessage.GM_VERSION_RETURN, this.GM_VerifyVersionReturn)//
+        NetEventDispatcher.getInstance().unRegisterMessage(GameMessage.GM_VERSION_RETURN, this.GM_VerifyVersionReturn)//
     }
 
 
