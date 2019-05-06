@@ -1877,7 +1877,6 @@ var ColliderBase=(function(_super){
 				if (this.fixture.GetBody()==this.rigidBody.body){
 					this.rigidBody.body.DestroyFixture(this.fixture);
 				}
-				this.fixture.Destroy();
 				this.fixture=null;
 			}
 			this.rigidBody=null;

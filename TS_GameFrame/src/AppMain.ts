@@ -23,6 +23,7 @@ import Test_0_1_Channel from './study/Test_0_1_Channel';
 import Test_0_1_Socket from './study/Test_0_1_Socket';
 import Test_0_Network_ProtocolBuffer from './study/Test_0_Network_ProtocolBuffer';
 import NetworkManager from './Framework/Network/NetworkManager';
+import Test_12_TiledMap from './study/Test_12_TiledMap';
 
 //启动类
 class AppMain {
@@ -33,8 +34,8 @@ class AppMain {
         }
         else {
             // 不支持WebGL时自动切换至Canvas
-            //Laya.init(Browser.clientWidth, Browser.clientHeight, WebGL);
-            Laya.init(GameConfig.width, GameConfig.height, Laya["WebGL"]);
+            Laya.init(Browser.clientWidth, Browser.clientHeight, WebGL);
+            //Laya.init(GameConfig.width, GameConfig.height, Laya["WebGL"]);
         }
         Laya["Physics"] && Laya["Physics"].enable();
         Laya["DebugPanel"] && Laya["DebugPanel"].enable();
@@ -69,7 +70,7 @@ class AppMain {
         //Config.isAntialias=true;
 
         //销毁当前没有被使用的资源,该函数会忽略lock=true的资源。
-        Laya.Resource.destroyUnusedResources();
+        //Laya.Resource.destroyUnusedResources();
     }
 
     onVersionLoaded(): void {
@@ -79,7 +80,7 @@ class AppMain {
 
     onConfigLoaded(): void {
         //加载IDE指定的场景
-        GameConfig.startScene && Laya.Scene.open(GameConfig.startScene);
+        //GameConfig.startScene && Laya.Scene.open(GameConfig.startScene);
 
         this.setup();
     }
@@ -103,6 +104,7 @@ class AppMain {
         //new Test_11_Sound();
         //new Test_0_1_Socket();
         //new Test_0_Network_ProtocolBuffer();
+        new Test_12_TiledMap();
     }
 }
 

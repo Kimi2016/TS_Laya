@@ -106,6 +106,7 @@ var Value2D=(function(){
 		this._cacheID=0;
 		this.clipMatDir=[ /*laya.webgl.canvas.WebGLContext2D._MAXSIZE*/99999999,0,0,/*laya.webgl.canvas.WebGLContext2D._MAXSIZE*/99999999];
 		this.clipMatPos=[0,0];
+		this.clipOff=[0,0];
 		this.defines=new ShaderDefines2D();
 		this.mainID=mainID;
 		this.subID=subID;
@@ -170,6 +171,7 @@ var Value2D=(function(){
 
 	__proto.clear=function(){
 		this.defines._value=this.subID+(WebGL.shaderHighPrecision? /*laya.webgl.shader.d2.ShaderDefines2D.SHADERDEFINE_FSHIGHPRECISION*/0x400:0);
+		this.clipOff[0]=0;
 	}
 
 	__proto.release=function(){
@@ -178,6 +180,7 @@ var Value2D=(function(){
 			this.clear();
 			this.filters=null;
 			this.ref=1;
+			this.clipOff[0]=0;
 		}
 	}
 
@@ -891,7 +894,7 @@ var TextRender=(function(){
 		};
 		var ri=null;
 		var oneTex=isWT || TextRender.forceWholeRender;
-		var splitTex=this.renderPerChar=(!isWT)|| TextRender.forceSplitRender || isHtmlChar;
+		var splitTex=this.renderPerChar=(!isWT)|| TextRender.forceSplitRender || isHtmlChar || (isWT && wt.splitRender);
 		if (!sameTexData || sameTexData.length < 1){
 			if (splitTex){
 				var stx=0;
@@ -926,7 +929,7 @@ var TextRender=(function(){
 						if (Render.isConchApp){
 							add.push({ri:ri,x:stx,y:sty,w:ri.bmpWidth / this.fontScaleX,h:ri.bmpHeight / this.fontScaleY });
 							}else{
-							add.push({ri:ri,x:stx+1/this.fontScaleX,y:sty/this.fontScaleY,w:(ri.bmpWidth-2)/ this.fontScaleX,h:(ri.bmpHeight-1)/ this.fontScaleY });
+							add.push({ri:ri,x:stx+1/this.fontScaleX,y:sty,w:(ri.bmpWidth-2)/ this.fontScaleX,h:(ri.bmpHeight-1)/ this.fontScaleY });
 						}
 						stx+=ri.width;
 					}
@@ -953,6 +956,7 @@ var TextRender=(function(){
 	*/
 	__proto._drawResortedWords=function(ctx,startx,starty,samePagesData){
 		var isLastRender=ctx._charSubmitCache && ctx._charSubmitCache._enbale;
+		var mat=ctx._curMat;
 		for (var id in samePagesData){
 			var pri=samePagesData[id];
 			var pisz=pri.length;if (pisz <=0)continue ;
@@ -967,7 +971,7 @@ var TextRender=(function(){
 				}else
 				ctx._inner_drawTexture(ri.tex.texture,(ri.tex.texture).bitmap.id,
 				startx+riSaved.x-ri.orix ,starty+riSaved.y-ri.oriy,riSaved.w,riSaved.h,
-				null,ri.uv,1.0,isLastRender);
+				mat,ri.uv,1.0,isLastRender);
 				if ((ctx).touches){
 					(ctx).touches.push(ri);
 				}
@@ -2528,7 +2532,7 @@ var WebGLContext=(function(){
 		if (!WebGL._isWebGL2 && !Render.isConchApp){
 			VertexArrayObject;
 			if (window._setupVertexArrayObject){
-				if (Browser.onBDMiniGame||Browser.onLimixiu)
+				if ((Browser.onMiniGame&&Browser.onIOS)||Browser.onBDMiniGame||Browser.onLimixiu)
 					window._forceSetupVertexArrayObject(gl);
 				else
 				window._setupVertexArrayObject(gl);
@@ -2560,7 +2564,7 @@ var WebGLContext=(function(){
 		WebGLContext._compressedTextureS3tc=WebGLContext._getExtension(gl,"WEBGL_compressed_texture_s3tc");
 		WebGLContext._compressedTexturePvrtc=WebGLContext._getExtension(gl,"WEBGL_compressed_texture_pvrtc");
 		WebGLContext._compressedTextureEtc1=WebGLContext._getExtension(gl,"WEBGL_compressed_texture_etc1");
-		return null;
+		WebGLContext._angleInstancedArrays=WebGLContext._getExtension(gl,"ANGLE_instanced_arrays");
 	}
 
 	WebGLContext.__init_native=function(){
@@ -2595,7 +2599,17 @@ var WebGLContext=(function(){
 	}
 
 	WebGLContext.setBlendFunc=function(gl,sFactor,dFactor){
-		(sFactor!==WebGLContext._sFactor||dFactor!==WebGLContext._dFactor)&& (WebGLContext._sFactor=sFactor,WebGLContext._dFactor=dFactor,gl.blendFunc(sFactor,dFactor));
+		(sFactor!==WebGLContext._sFactor || dFactor!==WebGLContext._dFactor)&& (WebGLContext._sFactor=WebGLContext._srcAlpha=sFactor,WebGLContext._dFactor=WebGLContext._dstAlpha=dFactor,gl.blendFunc(sFactor,dFactor));
+	}
+
+	WebGLContext.setBlendFuncSeperate=function(gl,srcRGB,dstRGB,srcAlpha,dstAlpha){
+		if (srcRGB!==WebGLContext._sFactor || dstRGB!==WebGLContext._dFactor || srcAlpha!==WebGLContext._srcAlpha || dstAlpha!==WebGLContext._dstAlpha){
+			WebGLContext._sFactor=srcRGB;
+			WebGLContext._dFactor=dstRGB;
+			WebGLContext._srcAlpha=srcAlpha;
+			WebGLContext._dstAlpha=dstAlpha;
+			gl.blendFuncSeparate(srcRGB,dstRGB,srcAlpha,dstAlpha);
+		}
 	}
 
 	WebGLContext.setCullFace=function(gl,value){
@@ -2969,6 +2983,7 @@ var WebGLContext=(function(){
 	WebGLContext._compressedTextureS3tc=null;
 	WebGLContext._compressedTexturePvrtc=null;
 	WebGLContext._compressedTextureEtc1=null;
+	WebGLContext._angleInstancedArrays=null;
 	WebGLContext._glTextureIDs=[ /*CLASS CONST:laya.webgl.WebGLContext.TEXTURE0*/0x84C0,/*CLASS CONST:laya.webgl.WebGLContext.TEXTURE1*/0x84C1,/*CLASS CONST:laya.webgl.WebGLContext.TEXTURE2*/0x84C2,/*CLASS CONST:laya.webgl.WebGLContext.TEXTURE3*/0x84C3,/*CLASS CONST:laya.webgl.WebGLContext.TEXTURE4*/0x84C4,/*CLASS CONST:laya.webgl.WebGLContext.TEXTURE5*/0x84C5,/*CLASS CONST:laya.webgl.WebGLContext.TEXTURE6*/0x84C6,/*CLASS CONST:laya.webgl.WebGLContext.TEXTURE7*/0x84C7];
 	WebGLContext._useProgram=null;
 	WebGLContext._depthTest=true;
@@ -2977,7 +2992,7 @@ var WebGLContext=(function(){
 	WebGLContext._cullFace=false;
 	WebGLContext._activedTextureID=0x84C0;
 	__static(WebGLContext,
-	['_extentionVendorPrefixes',function(){return this._extentionVendorPrefixes=["","WEBKIT_","MOZ_"];},'_activeTextures',function(){return this._activeTextures=new Array(8);},'_depthFunc',function(){return this._depthFunc=/*CLASS CONST:laya.webgl.WebGLContext.LESS*/0x0201;},'_sFactor',function(){return this._sFactor=/*CLASS CONST:laya.webgl.WebGLContext.ONE*/1;},'_dFactor',function(){return this._dFactor=/*CLASS CONST:laya.webgl.WebGLContext.ZERO*/0;},'_frontFace',function(){return this._frontFace=/*CLASS CONST:laya.webgl.WebGLContext.CCW*/0x0901;}
+	['_extentionVendorPrefixes',function(){return this._extentionVendorPrefixes=["","WEBKIT_","MOZ_"];},'_activeTextures',function(){return this._activeTextures=new Array(8);},'_depthFunc',function(){return this._depthFunc=/*CLASS CONST:laya.webgl.WebGLContext.LESS*/0x0201;},'_sFactor',function(){return this._sFactor=/*CLASS CONST:laya.webgl.WebGLContext.ONE*/1;},'_dFactor',function(){return this._dFactor=/*CLASS CONST:laya.webgl.WebGLContext.ZERO*/0;},'_srcAlpha',function(){return this._srcAlpha=/*CLASS CONST:laya.webgl.WebGLContext.ONE*/1;},'_dstAlpha',function(){return this._dstAlpha=/*CLASS CONST:laya.webgl.WebGLContext.ZERO*/0;},'_frontFace',function(){return this._frontFace=/*CLASS CONST:laya.webgl.WebGLContext.CCW*/0x0901;}
 	]);
 	return WebGLContext;
 })()
@@ -3082,7 +3097,7 @@ var SubmitTarget=(function(){
 			this.shaderValue.texture=target._getSource();
 			this.shaderValue.upload();
 			this.blend();
-			Stat.renderBatch++;
+			Stat.renderBatches++;
 			Stat.trianglesFaces+=this._numEle/3;
 			WebGL.mainContext.drawElements(/*laya.webgl.WebGLContext.TRIANGLES*/0x0004,this._numEle,/*laya.webgl.WebGLContext.UNSIGNED_SHORT*/0x1403,this._startIdx);
 		}
@@ -3579,19 +3594,19 @@ var Submit=(function(){
 	function Submit(renderType){
 		this.clipInfoID=-1;
 		//用来比较clipinfo
-		//this._mesh=null;
+		this._mesh=null;
 		//代替 _vb,_ib
-		//this._blendFn=null;
-		//this._id=0;
+		this._blendFn=null;
+		this._id=0;
 		//protected var _isSelfVb:Boolean=false;
-		//this._renderType=0;
-		//this._parent=null;
+		this._renderType=0;
+		this._parent=null;
 		// 从VB中什么地方开始画，画到哪
-		//this._startIdx=0;
+		this._startIdx=0;
 		//indexbuffer 的偏移，单位是byte
 		this._numEle=0;
 		this._ref=1;
-		//this.shaderValue=null;
+		this.shaderValue=null;
 		this._key=new SubmitKey();
 		(renderType===void 0)&& (renderType=10000);
 		this._renderType=renderType;
@@ -3641,7 +3656,7 @@ var Submit=(function(){
 			BlendMode.activeBlendFunction=this._blendFn;
 		}
 		gl.drawElements(/*laya.webgl.WebGLContext.TRIANGLES*/0x0004,this._numEle,/*laya.webgl.WebGLContext.UNSIGNED_SHORT*/0x1403,this._startIdx);
-		Stat.renderBatch++;
+		Stat.renderBatches++;
 		Stat.trianglesFaces+=this._numEle / 3;
 		return 1;
 	}
@@ -3838,15 +3853,14 @@ var WebGL=(function(){
 			};
 			var stage=Stage;
 			stage.prototype.render=stage.prototype.renderToNative;
-			if (Render.isConchApp){
-				ConchPropertyAdpt.rewriteProperties();
-			}
 		}
 		RunDriver.clear=function (color){
+			WebGLContext2D.set2DRenderConfig();
 			var c=ColorUtils.create(color).arrColor;
 			var gl=LayaGL.instance;
 			if (c)gl.clearColor(c[0],c[1],c[2],c[3]);
 			gl.clear(/*laya.webgl.WebGLContext.COLOR_BUFFER_BIT*/0x00004000 | /*laya.webgl.WebGLContext.DEPTH_BUFFER_BIT*/0x00000100 | /*laya.webgl.WebGLContext.STENCIL_BUFFER_BIT*/0x00000400);
+			RenderState2D.clear();
 		}
 		RunDriver.drawToCanvas=function (sprite,_renderType,canvasWidth,canvasHeight,offsetX,offsetY){
 			offsetX-=sprite.x;
@@ -3865,14 +3879,6 @@ var WebGL=(function(){
 			ctx._targets.end();
 			ctx._targets.restore();
 			return canv;
-		}
-		RenderTexture2D.prototype.getData=function (x,y,width,height,callBack){
-			var gl=LayaGL.instance;
-			gl.bindFramebuffer(/*laya.webgl.WebGLContext.FRAMEBUFFER*/0x8D40,this._frameBuffer);
-			gl.readPixelsAsync(x,y,width,height,/*laya.webgl.WebGLContext.RGBA*/0x1908,/*laya.webgl.WebGLContext.UNSIGNED_BYTE*/0x1401,function(data){
-				/*__JS__ */callBack(data);
-			});
-			gl.bindFramebuffer(/*laya.webgl.WebGLContext.FRAMEBUFFER*/0x8D40,null);
 		}
 		RenderTexture2D.prototype._uv=RenderTexture2D.flipyuv;
 		Object["defineProperty"](RenderTexture2D.prototype,"uv",{
@@ -3956,7 +3962,10 @@ var WebGL=(function(){
 			RenderState2D.worldScissorTest && laya.webgl.WebGL.mainContext.disable(/*laya.webgl.WebGLContext.SCISSOR_TEST*/0x0C11);
 			var ctx=Render.context;
 			var c=(ctx._submits._length==0 || Config.preserveDrawingBuffer)? ColorUtils.create(color).arrColor :Laya.stage._wgColor;
-			if (c)ctx.clearBG(c[0],c[1],c[2],c[3]);
+			if (c)
+				ctx.clearBG(c[0],c[1],c[2],c[3]);
+			else
+			ctx.clearBG(0,0,0,0);
 			RenderState2D.clear();
 		}
 		RunDriver.drawToCanvas=function (sprite,_renderType,canvasWidth,canvasHeight,offsetX,offsetY){
@@ -4470,15 +4479,12 @@ var Shader2D=(function(){
 
 	Shader2D.__init__=function(){
 		var vs,ps;
-		vs="/*\n	texture和fillrect使用的。\n*/\nattribute vec4 posuv;\nattribute vec4 attribColor;\nattribute vec4 attribFlags;\n//attribute vec4 clipDir;\n//attribute vec2 clipRect;\nuniform vec4 clipMatDir;\nuniform vec2 clipMatPos;		// 这个是全局的，不用再应用矩阵了。\nvarying vec2 cliped;\nuniform vec2 size;\n\n#ifdef WORLDMAT\n	uniform mat4 mmat;\n#endif\n#ifdef MVP3D\n	uniform mat4 u_MvpMatrix;\n#endif\nvarying vec4 v_texcoordAlpha;\nvarying vec4 v_color;\nvarying float v_useTex;\n\nvoid main() {\n\n	vec4 pos = vec4(posuv.xy,0.,1.);\n#ifdef WORLDMAT\n	pos=mmat*pos;\n#endif\n	vec4 pos1  =vec4((pos.x/size.x-0.5)*2.0,(0.5-pos.y/size.y)*2.0,0.,1.0);\n#ifdef MVP3D\n	gl_Position=u_MvpMatrix*pos1;\n#else\n	gl_Position=pos1;\n#endif\n	v_texcoordAlpha.xy = posuv.zw;\n	//v_texcoordAlpha.z = attribColor.a/255.0;\n	v_color = attribColor/255.0;\n	v_color.xyz*=v_color.w;//反正后面也要预乘\n	\n	v_useTex = attribFlags.r/255.0;\n	float clipw = length(clipMatDir.xy);\n	float cliph = length(clipMatDir.zw);\n	vec2 clippos = pos.xy - clipMatPos.xy;	//pos已经应用矩阵了，为了减的有意义，clip的位置也要缩放\n	if(clipw>20000. && cliph>20000.)\n		cliped = vec2(0.5,0.5);\n	else {\n		//转成0到1之间。/clipw/clipw 表示clippos与normalize之后的clip朝向点积之后，再除以clipw\n		cliped=vec2( dot(clippos,clipMatDir.xy)/clipw/clipw, dot(clippos,clipMatDir.zw)/cliph/cliph);\n	}\n\n}";
+		vs="/*\n	texture和fillrect使用的。\n*/\nattribute vec4 posuv;\nattribute vec4 attribColor;\nattribute vec4 attribFlags;\n//attribute vec4 clipDir;\n//attribute vec2 clipRect;\nuniform vec4 clipMatDir;\nuniform vec2 clipMatPos;		// 这个是全局的，不用再应用矩阵了。\nvarying vec2 cliped;\nuniform vec2 size;\nuniform vec2 clipOff;			// 使用要把clip偏移。cacheas normal用. 只用了[0]\n#ifdef WORLDMAT\n	uniform mat4 mmat;\n#endif\n#ifdef MVP3D\n	uniform mat4 u_MvpMatrix;\n#endif\nvarying vec4 v_texcoordAlpha;\nvarying vec4 v_color;\nvarying float v_useTex;\n\nvoid main() {\n\n	vec4 pos = vec4(posuv.xy,0.,1.);\n#ifdef WORLDMAT\n	pos=mmat*pos;\n#endif\n	vec4 pos1  =vec4((pos.x/size.x-0.5)*2.0,(0.5-pos.y/size.y)*2.0,0.,1.0);\n#ifdef MVP3D\n	gl_Position=u_MvpMatrix*pos1;\n#else\n	gl_Position=pos1;\n#endif\n	v_texcoordAlpha.xy = posuv.zw;\n	//v_texcoordAlpha.z = attribColor.a/255.0;\n	v_color = attribColor/255.0;\n	v_color.xyz*=v_color.w;//反正后面也要预乘\n	\n	v_useTex = attribFlags.r/255.0;\n	float clipw = length(clipMatDir.xy);\n	float cliph = length(clipMatDir.zw);\n	\n	vec2 clpos = clipMatPos.xy;\n	#ifdef WORLDMAT\n		// 如果有mmat，需要修改clipMatPos,因为 这是cacheas normal （如果不是就错了）， clipMatPos被去掉了偏移\n		if(clipOff[0]>0.0){\n			clpos.x+=mmat[3].x;	//tx	最简单处理\n			clpos.y+=mmat[3].y;	//ty\n		}\n	#endif\n	vec2 clippos = pos.xy - clpos;	//pos已经应用矩阵了，为了减的有意义，clip的位置也要缩放\n	if(clipw>20000. && cliph>20000.)\n		cliped = vec2(0.5,0.5);\n	else {\n		//转成0到1之间。/clipw/clipw 表示clippos与normalize之后的clip朝向点积之后，再除以clipw\n		cliped=vec2( dot(clippos,clipMatDir.xy)/clipw/clipw, dot(clippos,clipMatDir.zw)/cliph/cliph);\n	}\n\n}";
 		ps="/*\n	texture和fillrect使用的。\n*/\n\nprecision mediump float;\n//precision highp float;\nvarying vec4 v_texcoordAlpha;\nvarying vec4 v_color;\nvarying float v_useTex;\nuniform sampler2D texture;\nvarying vec2 cliped;\n\n#ifdef BLUR_FILTER\nuniform vec4 strength_sig2_2sig2_gauss1;\nuniform vec2 blurInfo;\n\n#define PI 3.141593\n\nfloat getGaussian(float x, float y){\n    return strength_sig2_2sig2_gauss1.w*exp(-(x*x+y*y)/strength_sig2_2sig2_gauss1.z);\n}\n\nvec4 blur(){\n    const float blurw = 9.0;\n    vec4 vec4Color = vec4(0.0,0.0,0.0,0.0);\n    vec2 halfsz=vec2(blurw,blurw)/2.0/blurInfo;    \n    vec2 startpos=v_texcoordAlpha.xy-halfsz;\n    vec2 ctexcoord = startpos;\n    vec2 step = 1.0/blurInfo;  //每个像素      \n    \n    for(float y = 0.0;y<=blurw; ++y){\n        ctexcoord.x=startpos.x;\n        for(float x = 0.0;x<=blurw; ++x){\n            //TODO 纹理坐标的固定偏移应该在vs中处理\n            vec4Color += texture2D(texture, ctexcoord)*getGaussian(x-blurw/2.0,y-blurw/2.0);\n            ctexcoord.x+=step.x;\n        }\n        ctexcoord.y+=step.y;\n    }\n    return vec4Color;\n}\n#endif\n\n#ifdef COLOR_FILTER\nuniform vec4 colorAlpha;\nuniform mat4 colorMat;\n#endif\n\n#ifdef GLOW_FILTER\nuniform vec4 u_color;\nuniform vec4 u_blurInfo1;\nuniform vec4 u_blurInfo2;\n#endif\n\n#ifdef COLOR_ADD\nuniform vec4 colorAdd;\n#endif\n\n#ifdef FILLTEXTURE	\nuniform vec4 u_TexRange;//startu,startv,urange, vrange\n#endif\nvoid main() {\n	if(cliped.x<0.) discard;\n	if(cliped.x>1.) discard;\n	if(cliped.y<0.) discard;\n	if(cliped.y>1.) discard;\n	\n#ifdef FILLTEXTURE	\n   vec4 color= texture2D(texture, fract(v_texcoordAlpha.xy)*u_TexRange.zw + u_TexRange.xy);\n#else\n   vec4 color= texture2D(texture, v_texcoordAlpha.xy);\n#endif\n\n   if(v_useTex<=0.)color = vec4(1.,1.,1.,1.);\n   color.a*=v_color.w;\n   //color.rgb*=v_color.w;\n   color.rgb*=v_color.rgb;\n   gl_FragColor=color;\n   \n   #ifdef COLOR_ADD\n	gl_FragColor = vec4(colorAdd.rgb,colorAdd.a*gl_FragColor.a);\n	gl_FragColor.xyz *= colorAdd.a;\n   #endif\n   \n   #ifdef BLUR_FILTER\n	gl_FragColor =   blur();\n	gl_FragColor.w*=v_color.w;   \n   #endif\n   \n   #ifdef COLOR_FILTER\n	mat4 alphaMat =colorMat;\n\n	alphaMat[0][3] *= gl_FragColor.a;\n	alphaMat[1][3] *= gl_FragColor.a;\n	alphaMat[2][3] *= gl_FragColor.a;\n\n	gl_FragColor = gl_FragColor * alphaMat;\n	gl_FragColor += colorAlpha/255.0*gl_FragColor.a;\n   #endif\n   \n   #ifdef GLOW_FILTER\n	const float c_IterationTime = 10.0;\n	float floatIterationTotalTime = c_IterationTime * c_IterationTime;\n	vec4 vec4Color = vec4(0.0,0.0,0.0,0.0);\n	vec2 vec2FilterDir = vec2(-(u_blurInfo1.z)/u_blurInfo2.x,-(u_blurInfo1.w)/u_blurInfo2.y);\n	vec2 vec2FilterOff = vec2(u_blurInfo1.x/u_blurInfo2.x/c_IterationTime * 2.0,u_blurInfo1.y/u_blurInfo2.y/c_IterationTime * 2.0);\n	float maxNum = u_blurInfo1.x * u_blurInfo1.y;\n	vec2 vec2Off = vec2(0.0,0.0);\n	float floatOff = c_IterationTime/2.0;\n	for(float i = 0.0;i<=c_IterationTime; ++i){\n		for(float j = 0.0;j<=c_IterationTime; ++j){\n			vec2Off = vec2(vec2FilterOff.x * (i - floatOff),vec2FilterOff.y * (j - floatOff));\n			vec4Color += texture2D(texture, v_texcoordAlpha.xy + vec2FilterDir + vec2Off)/floatIterationTotalTime;\n		}\n	}\n	gl_FragColor = vec4(u_color.rgb,vec4Color.a * u_blurInfo2.z);\n	gl_FragColor.rgb *= gl_FragColor.a;   \n   #endif\n   \n}";
 		Shader.preCompile2D(0,/*laya.webgl.shader.d2.ShaderDefines2D.TEXTURE2D*/0x01,vs,ps,null);
 		vs="attribute vec4 position;\nattribute vec4 attribColor;\n//attribute vec4 clipDir;\n//attribute vec2 clipRect;\nuniform vec4 clipMatDir;\nuniform vec2 clipMatPos;\n#ifdef WORLDMAT\n	uniform mat4 mmat;\n#endif\nuniform mat4 u_mmat2;\n//uniform vec2 u_pos;\nuniform vec2 size;\nvarying vec4 color;\n//vec4 dirxy=vec4(0.9,0.1, -0.1,0.9);\n//vec4 clip=vec4(100.,30.,300.,600.);\nvarying vec2 cliped;\nvoid main(){\n	\n#ifdef WORLDMAT\n	vec4 pos=mmat*vec4(position.xy,0.,1.);\n	gl_Position =vec4((pos.x/size.x-0.5)*2.0,(0.5-pos.y/size.y)*2.0,pos.z,1.0);\n#else\n	gl_Position =vec4((position.x/size.x-0.5)*2.0,(0.5-position.y/size.y)*2.0,position.z,1.0);\n#endif	\n	float clipw = length(clipMatDir.xy);\n	float cliph = length(clipMatDir.zw);\n	vec2 clippos = position.xy - clipMatPos.xy;	//pos已经应用矩阵了，为了减的有意义，clip的位置也要缩放\n	if(clipw>20000. && cliph>20000.)\n		cliped = vec2(0.5,0.5);\n	else {\n		//clipdir是带缩放的方向，由于上面clippos是在缩放后的空间计算的，所以需要把方向先normalize一下\n		cliped=vec2( dot(clippos,clipMatDir.xy)/clipw/clipw, dot(clippos,clipMatDir.zw)/cliph/cliph);\n	}\n  //pos2d.x = dot(clippos,dirx);\n  color=attribColor/255.;\n}";
 		ps="precision mediump float;\n//precision mediump float;\nvarying vec4 color;\n//uniform float alpha;\nvarying vec2 cliped;\nvoid main(){\n	//vec4 a=vec4(color.r, color.g, color.b, 1);\n	//a.a*=alpha;\n    gl_FragColor= color;// vec4(color.r, color.g, color.b, alpha);\n	gl_FragColor.rgb*=color.a;\n	if(cliped.x<0.) discard;\n	if(cliped.x>1.) discard;\n	if(cliped.y<0.) discard;\n	if(cliped.y>1.) discard;\n}";
 		Shader.preCompile2D(0,/*laya.webgl.shader.d2.ShaderDefines2D.PRIMITIVE*/0x04,vs,ps,null);
-		vs="/*\n	texture和fillrect使用的。\n*/\nattribute vec4 posuv;\nattribute vec4 attribColor;\nattribute vec4 attribFlags;\n//attribute vec4 clipDir;\n//attribute vec2 clipRect;\nuniform vec4 clipMatDir;\nuniform vec2 clipMatPos;		// 这个是全局的，不用再应用矩阵了。\nvarying vec2 cliped;\nuniform vec2 size;\n\n#ifdef WORLDMAT\n	uniform mat4 mmat;\n#endif\n#ifdef MVP3D\n	uniform mat4 u_MvpMatrix;\n#endif\nvarying vec4 v_texcoordAlpha;\nvarying vec4 v_color;\nvarying float v_useTex;\n\nvoid main() {\n\n	vec4 pos = vec4(posuv.xy,0.,1.);\n#ifdef WORLDMAT\n	pos=mmat*pos;\n#endif\n	vec4 pos1  =vec4((pos.x/size.x-0.5)*2.0,(0.5-pos.y/size.y)*2.0,0.,1.0);\n#ifdef MVP3D\n	gl_Position=u_MvpMatrix*pos1;\n#else\n	gl_Position=pos1;\n#endif\n	v_texcoordAlpha.xy = posuv.zw;\n	//v_texcoordAlpha.z = attribColor.a/255.0;\n	v_color = attribColor/255.0;\n	v_color.xyz*=v_color.w;//反正后面也要预乘\n	\n	v_useTex = attribFlags.r/255.0;\n	float clipw = length(clipMatDir.xy);\n	float cliph = length(clipMatDir.zw);\n	vec2 clippos = pos.xy - clipMatPos.xy;	//pos已经应用矩阵了，为了减的有意义，clip的位置也要缩放\n	if(clipw>20000. && cliph>20000.)\n		cliped = vec2(0.5,0.5);\n	else {\n		//转成0到1之间。/clipw/clipw 表示clippos与normalize之后的clip朝向点积之后，再除以clipw\n		cliped=vec2( dot(clippos,clipMatDir.xy)/clipw/clipw, dot(clippos,clipMatDir.zw)/cliph/cliph);\n	}\n\n}";
-		ps="#ifdef FSHIGHPRECISION\n	precision highp float;\n#else\n	precision mediump float;\n#endif\n\n//precision highp float;\nvarying vec2 v_texcoord;\nuniform sampler2D texture;\nuniform float alpha;\nuniform vec4 u_TexRange;\nuniform vec2 u_offset;\n\n#import?BLUR_FILTER  \"parts/BlurFilter_ps_uniform.glsl\";\n\n#import?COLOR_FILTER \"parts/ColorFilter.glsl\" with ColorFilter_ps_uniform;\n\n#import?GLOW_FILTER \"parts/GlowFilter_ps_uniform.glsl\";\n\n#import?COLOR_ADD \"parts/ColorAdd.glsl\" with ColorAdd_ps_uniform;\n\nvoid main() {\n   vec2 newTexCoord;\n   newTexCoord.x = mod(u_offset.x + v_texcoord.x,u_TexRange.y) + u_TexRange.x;\n   newTexCoord.y = mod(u_offset.y + v_texcoord.y,u_TexRange.w) + u_TexRange.z;\n   vec4 color= texture2D(texture, newTexCoord);\n   color.a*=alpha;\n   gl_FragColor=color;\n   \n   #import?COLOR_ADD \"parts/ColorAdd.glsl\" with ColorAdd_ps_logic;\n   \n   #import?BLUR_FILTER  \"parts/BlurFilter_ps_logic.glsl\";\n   \n   #import?COLOR_FILTER \"parts/ColorFilter.glsl\" with ColorFilter_ps_logic;\n   \n   #import?GLOW_FILTER \"parts/GlowFilter_ps_logic.glsl\";\n}";
-		Shader.preCompile2D(0,/*laya.webgl.shader.d2.ShaderDefines2D.FILLTEXTURE*/0x100,vs,ps,null);
 		vs="attribute vec2 position;\nattribute vec2 texcoord;\nattribute vec4 color;\nuniform vec2 size;\nuniform float offsetX;\nuniform float offsetY;\nuniform mat4 mmat;\nuniform mat4 u_mmat2;\nvarying vec2 v_texcoord;\nvarying vec4 v_color;\nvoid main() {\n  vec4 pos=mmat*u_mmat2*vec4(offsetX+position.x,offsetY+position.y,0,1 );\n  gl_Position = vec4((pos.x/size.x-0.5)*2.0,(0.5-pos.y/size.y)*2.0,pos.z,1.0);\n  v_color = color;\n  v_color.rgb *= v_color.a;\n  v_texcoord = texcoord;  \n}";
 		ps="precision mediump float;\nvarying vec2 v_texcoord;\nvarying vec4 v_color;\nuniform sampler2D texture;\nuniform float alpha;\nvoid main() {\n	vec4 t_color = texture2D(texture, v_texcoord);\n	gl_FragColor = t_color.rgba * v_color;\n	gl_FragColor *= alpha;\n}";
 		Shader.preCompile2D(0,/*laya.webgl.shader.d2.ShaderDefines2D.SKINMESH*/0x200,vs,ps,null);
@@ -4600,8 +4606,8 @@ var InlcudeFile=(function(){
 
 /**
 *对象 cacheas normal的时候，本质上只是想把submit缓存起来，以后直接执行
-*为了避免各种各样的麻烦，这里采用复制响应部分的submit的方法。执行环境还是在原来的context中
-*否则包括clipt等都非常难以处理
+*为了避免各种各样的麻烦，这里采用复制相应部分的submit的方法。执行环境还是在原来的context中
+*否则包括clip等都非常难以处理
 */
 //class laya.webgl.canvas.WebGLCacheAsNormalCanvas
 var WebGLCacheAsNormalCanvas=(function(){
@@ -4645,6 +4651,7 @@ var WebGLCacheAsNormalCanvas=(function(){
 			this.context._charSubmitCache.enable(false,this.context);
 			this.context._charSubmitCache.enable(true,this.context);
 		}
+		this.context._incache=true;
 		this.touches.length=0;
 		(this.context).touches=this.touches;
 		this.context._globalClipMatrix.copyTo(this.cachedClipInfo);
@@ -4699,6 +4706,7 @@ var WebGLCacheAsNormalCanvas=(function(){
 		this.context._curMat.tx=this.oldTx;
 		this.context._curMat.ty=this.oldTy;
 		(this.context).touches=null;
+		this.context._incache=false;
 	}
 
 	/**
@@ -5288,45 +5296,6 @@ var SubmitKey=(function(){
 })()
 
 
-//class laya.layagl.ConchPropertyAdpt
-var ConchPropertyAdpt=(function(){
-	function ConchPropertyAdpt(){}
-	__class(ConchPropertyAdpt,'laya.layagl.ConchPropertyAdpt');
-	ConchPropertyAdpt.rewriteProperties=function(){
-		laya.layagl.ConchPropertyAdpt.rewriteNumProperty(Rectangle.prototype,"x");
-		laya.layagl.ConchPropertyAdpt.rewriteNumProperty(Rectangle.prototype,"y");
-		laya.layagl.ConchPropertyAdpt.rewriteNumProperty(Rectangle.prototype,"width");
-		laya.layagl.ConchPropertyAdpt.rewriteNumProperty(Rectangle.prototype,"height");
-		laya.layagl.ConchPropertyAdpt.rewriteFunc(Rectangle.prototype,"recover");
-	}
-
-	ConchPropertyAdpt.rewriteNumProperty=function(proto,p){
-		Object["defineProperty"](proto,p,{
-			"get":function (){
-				return this["_"+p] || 0;
-			},
-			"set":function (v){
-				this["_"+p]=v;
-				if (this.onPropertyChanged){
-					this.onPropertyChanged(this);
-				}
-			}
-		});
-	}
-
-	ConchPropertyAdpt.rewriteFunc=function(proto,p){
-		proto["__"+p]=proto[p];
-		proto[p]=function (){
-			proto["__"+p].call(this);
-			if (this.onPropertyChanged)
-				this.onPropertyChanged=null;
-		}
-	}
-
-	return ConchPropertyAdpt;
-})()
-
-
 /**
 *由于drawTextureM需要一个Texture对象，又不想真的弄一个，所以，做个假的，只封装必须成员
 */
@@ -5583,29 +5552,30 @@ var WebGLContext2D=(function(_super){
 		this._drawTriUseAbsMatrix=false;
 		//还原2D视口
 		this._id=++WebGLContext2D._COUNT;
-		//this._other=null;
-		//this._renderNextSubmitIndex=0;
+		this._other=null;
+		this._renderNextSubmitIndex=0;
 		this._path=null;
 		//this._primitiveValue2D=null;
 		this._drawCount=1;
-		this._maxNumEle=0;
 		this._renderCount=0;
 		this._isConvexCmd=true;
 		//arc等是convex的，moveTo,linTo就不是了
 		this._submits=null;
 		this._curSubmit=null;
 		//当前将要使用的设置。用来跟上一次的_curSubmit比较
-		//this._mesh=null;
+		this._mesh=null;
 		//用Mesh2D代替_vb,_ib. 当前使用的mesh
-		//this._pathMesh=null;
+		this._pathMesh=null;
 		//矢量专用mesh。
-		//this._triangleMesh=null;
+		this._triangleMesh=null;
 		//drawTriangles专用mesh。由于ib不固定，所以不能与_mesh通用
 		this.meshlist=[];
 		//用矩阵描述的clip信息。最终的点投影到这个矩阵上，在0~1之间就可见。
+		this._clipInCache=false;
+		// 当前记录的clipinfo是在cacheas normal后赋值的，因为cacheas normal会去掉当前矩阵的tx，ty，所以需要记录一下，以便在是shader中恢复
 		this._clipInfoID=0;
 		//生成clipid的，原来是 _clipInfoID=++_clipInfoID 这样会有问题，导致兄弟clip的id都相同
-		//this._curMat=null;
+		this._curMat=null;
 		//计算矩阵缩放的缓存
 		this._lastMatScaleX=1.0;
 		this._lastMatScaleY=1.0;
@@ -5614,16 +5584,16 @@ var WebGLContext2D=(function(_super){
 		this._lastMat_c=0.0;
 		this._lastMat_d=1.0;
 		this._nBlendType=0;
-		//this._save=null;
-		//this._targets=null;
-		//this._charSubmitCache=null;
+		this._save=null;
+		this._targets=null;
+		this._charSubmitCache=null;
 		this._saveMark=null;
 		/**
 		*所cacheAs精灵
 		*对于cacheas bitmap的情况，如果图片还没准备好，需要有机会重画，所以要保存sprite。例如在图片
 		*加载完成后，调用repaint
 		*/
-		//this.sprite=null;
+		this.sprite=null;
 		//文字颜色。使用顶点色
 		this._drawTextureUseColor=false;
 		this._italicDeg=0;
@@ -5633,13 +5603,19 @@ var WebGLContext2D=(function(_super){
 		this._fillColor=0;
 		this._flushCnt=0;
 		//给fillrect用
-		//this._colorFiler=null;
+		this._colorFiler=null;
 		this.drawTexAlign=false;
+		// 按照像素对齐
+		this._incache=false;
 		/*******************************************start矢量绘制***************************************************/
 		this.mId=-1;
 		this.mHaveKey=false;
 		this.mHaveLineKey=false;
 		WebGLContext2D.__super.call(this);
+		this._tmpMatrix=new Matrix();
+		this._drawTexToDrawTri_Vert=new Float32Array(8);
+		this._drawTexToDrawTri_Index=new Uint16Array([0,1,2,0,2,3]);
+		this._tempUV=new Float32Array(8);
 		this._width=99999999;
 		this._height=99999999;
 		this._submitKey=new SubmitKey();
@@ -5653,6 +5629,7 @@ var WebGLContext2D=(function(_super){
 		if (!WebGLContext2D.defTexture){
 			var defTex2d=new Texture2D(2,2);
 			defTex2d.setPixels(new Uint8Array(16));
+			defTex2d.lock=true;
 			WebGLContext2D.defTexture=new Texture(defTex2d);
 		}
 		this._lastTex=WebGLContext2D.defTexture;
@@ -5953,7 +5930,11 @@ var WebGLContext2D=(function(_super){
 		if (!texture._getSource()){
 			this.sprite && Laya.systemTimer.callLater(this,this._repaintSprite);
 			return;
-		};
+		}
+		this._fillTexture(texture,texture.width,texture.height,texture.uvrect,x,y,width,height,type,offset.x,offset.y);
+	}
+
+	__proto._fillTexture=function(texture,texw,texh,texuvRect,x,y,width,height,type,offsetx,offsety){
 		var submit=this._curSubmit;
 		var sameKey=false;
 		if (this._mesh.vertNum+4 > 65535){
@@ -5961,7 +5942,6 @@ var WebGLContext2D=(function(_super){
 			this.meshlist.push(this._mesh);
 			sameKey=false;
 		};
-		var tex2d=texture.bitmap;
 		var repeatx=true;
 		var repeaty=true;
 		switch(type){
@@ -5975,28 +5955,28 @@ var WebGLContext2D=(function(_super){
 		var stu=0;
 		var stv=0;
 		var stx=0,sty=0,edx=0,edy=0;
-		if (offset.x < 0){
+		if (offsetx < 0){
 			stx=x;
-			stu=(-offset.x %texture.width)/ texture.width;
+			stu=(-offsetx %texw)/ texw;
 			}else {
-			stx=x+offset.x;
+			stx=x+offsetx;
 		}
-		if (offset.y < 0){
+		if (offsety < 0){
 			sty=y;
-			stv=(-offset.y %texture.height)/ texture.height;
+			stv=(-offsety %texh)/ texh;
 			}else {
-			sty=y+offset.y;
+			sty=y+offsety;
 		}
 		edx=x+width;
 		edy=y+height;
-		(!repeatx)&& (edx=Math.min(edx,x+offset.x+texture.width));
-		(!repeaty)&& (edy=Math.min(edy,y+offset.y+texture.height));
+		(!repeatx)&& (edx=Math.min(edx,x+offsetx+texw));
+		(!repeaty)&& (edy=Math.min(edy,y+offsety+texh));
 		if (edx < x || edy < y)
 			return;
 		if (stx > edx || sty > edy)
 			return;
-		var edu=(edx-x-offset.x)/texture.width;
-		var edv=(edy-y-offset.y)/ texture.height;
+		var edu=(edx-x-offsetx)/texw;
+		var edv=(edy-y-offsety)/ texh;
 		this.transformQuad(stx,sty,edx-stx,edy-sty,0,this._curMat,this._transedPoints);
 		uv[0]=stu;uv[1]=stv;uv[2]=edu;uv[3]=stv;uv[4]=edu;uv[5]=edv;uv[6]=stu;uv[7]=edv;
 		if (!this.clipedOff(this._transedPoints)){
@@ -6004,7 +5984,7 @@ var WebGLContext2D=(function(_super){
 			this._mesh.addQuad(this._transedPoints,uv,rgba,true);
 			var sv=Value2D.create(/*laya.webgl.shader.d2.ShaderDefines2D.TEXTURE2D*/0x01,0);
 			sv.defines.add(/*laya.webgl.shader.d2.ShaderDefines2D.FILLTEXTURE*/0x100);
-			(sv).u_TexRange=texture.uvrect;
+			(sv).u_TexRange=texuvRect;
 			submit=this._curSubmit=SubmitTexture.create(this,this._mesh,sv);
 			this._submits[this._submits._length++]=submit;
 			this._copyClipInfo(submit,this._globalClipMatrix);
@@ -6039,8 +6019,9 @@ var WebGLContext2D=(function(_super){
 		};
 		var n=pos.length / 2;
 		var ipos=0;
+		var bmpid=tex.bitmap.id;
 		for (var i=0;i < n;i++){
-			this._inner_drawTexture(tex,tex.bitmap.id,pos[ipos++]+tx,pos[ipos++]+ty,0,0,null,null,1.0,false);
+			this._inner_drawTexture(tex,bmpid,pos[ipos++]+tx,pos[ipos++]+ty,0,0,null,null,1.0,false);
 		}
 	}
 
@@ -6091,6 +6072,9 @@ var WebGLContext2D=(function(_super){
 		var cmp=submit.shaderValue.clipMatPos;
 		cmp[0]=clipInfo.tx;cmp[1]=clipInfo.ty;
 		submit.clipInfoID=this._clipInfoID;
+		if (this._clipInCache){
+			submit.shaderValue.clipOff[0]=1;
+		}
 	}
 
 	__proto.isSameClipInfo=function(submit){
@@ -6157,24 +6141,29 @@ var WebGLContext2D=(function(_super){
 		var preKey=this._curSubmit._key;
 		uv=uv || /*__JS__ */tex._uv
 		if (preKey.submitType===/*laya.webgl.submit.Submit.KEY_TRIANGLES*/4 && preKey.other===imgid){
-			var tv=WebGLContext2D._drawTexToDrawTri_Vert;
+			var tv=this._drawTexToDrawTri_Vert;
 			tv[0]=x;tv[1]=y;tv[2]=x+width,tv[3]=y,tv[4]=x+width,tv[5]=y+height,tv[6]=x,tv[7]=y+height;
 			this._drawTriUseAbsMatrix=true;
-			this.drawTriangles(tex,0,0,tv,(uv ),WebGLContext2D._drawTexToDrawTri_Index,m,alpha,null,'normal');
+			var tuv=this._tempUV;
+			tuv[0]=uv[0];tuv[1]=uv[1];tuv[2]=uv[2];tuv[3]=uv[3];tuv[4]=uv[4];tuv[5]=uv[5];tuv[6]=uv[6];tuv[7]=uv[7];
+			this.drawTriangles(tex,0,0,tv,tuv,this._drawTexToDrawTri_Index,m,alpha,null,null);
 			this._drawTriUseAbsMatrix=false;
 			return true;
 		};
+		var mesh=this._mesh;
+		var submit=this._curSubmit;
 		var ops=lastRender?this._charSubmitCache.getPos():this._transedPoints;
 		this.transformQuad(x,y,width || tex.width,height || tex.height,this._italicDeg,m || this._curMat,ops);
 		if (this.drawTexAlign){
-			ops[0]=Math.round(ops[0]);
-			ops[1]=Math.round(ops[1]);
-			ops[2]=Math.round(ops[2]);
-			ops[3]=Math.round(ops[3]);
-			ops[4]=Math.round(ops[4]);
-			ops[5]=Math.round(ops[5]);
-			ops[6]=Math.round(ops[6]);
-			ops[7]=Math.round(ops[7]);
+			var round=Math.round;
+			ops[0]=round(ops[0]);
+			ops[1]=round(ops[1]);
+			ops[2]=round(ops[2]);
+			ops[3]=round(ops[3]);
+			ops[4]=round(ops[4]);
+			ops[5]=round(ops[5]);
+			ops[6]=round(ops[6]);
+			ops[7]=round(ops[7]);
 			this.drawTexAlign=false;
 		};
 		var rgba=this._mixRGBandAlpha(0xffffffff,this._shader2D.ALPHA *alpha);
@@ -6184,25 +6173,23 @@ var WebGLContext2D=(function(_super){
 		}
 		this._drawCount++;
 		var sameKey=imgid >=0 && preKey.submitType===/*laya.webgl.submit.Submit.KEY_DRAWTEXTURE*/2 && preKey.other===imgid;
-		sameKey && (sameKey=sameKey&& this.isSameClipInfo(this._curSubmit));
+		sameKey && (sameKey=sameKey&& this.isSameClipInfo(submit));
 		this._lastTex=tex;
-		if (this._mesh.vertNum+4 > 65535){
-			this._mesh=MeshQuadTexture.getAMesh();
-			this.meshlist.push(this._mesh);
+		if (mesh.vertNum+4 > 65535){
+			mesh=this._mesh=MeshQuadTexture.getAMesh();
+			this.meshlist.push(mesh);
 			sameKey=false;
-		}
-		if (!this.clipedOff(this._transedPoints)){
-			this._mesh.addQuad(ops,uv ,rgba,true);
+			}{
+			mesh.addQuad(ops,uv ,rgba,true);
 			if (!sameKey){
-				var submit=SubmitTexture.create(this,this._mesh,Value2D.create(/*laya.webgl.shader.d2.ShaderDefines2D.TEXTURE2D*/0x01,0));
-				this._submits[this._submits._length++]=this._curSubmit=submit;
+				this._submits[this._submits._length++]=this._curSubmit=submit=SubmitTexture.create(this,mesh,Value2D.create(/*laya.webgl.shader.d2.ShaderDefines2D.TEXTURE2D*/0x01,0));
 				submit.shaderValue.textureHost=tex;
 				submit._key.other=imgid;
 				this._copyClipInfo(submit,this._globalClipMatrix);
 			}
-			this._curSubmit._numEle+=6;
-			this._mesh.indexNum+=6;
-			this._mesh.vertNum+=4;
+			submit._numEle+=6;
+			mesh.indexNum+=6;
+			mesh.vertNum+=4;
 			return true;
 		}
 		return false;
@@ -6216,16 +6203,28 @@ var WebGLContext2D=(function(_super){
 	__proto.transform4Points=function(a,m,out){
 		var tx=m.tx;
 		var ty=m.ty;
+		var ma=m.a;
+		var mb=m.b;
+		var mc=m.c;
+		var md=m.d;
+		var a0=a[0];
+		var a1=a[1];
+		var a2=a[2];
+		var a3=a[3];
+		var a4=a[4];
+		var a5=a[5];
+		var a6=a[6];
+		var a7=a[7];
 		if (m._bTransform){
-			out[0]=a[0] *m.a+a[1] *m.c+tx;out[1]=a[0] *m.b+a[1] *m.d+ty;
-			out[2]=a[2] *m.a+a[3] *m.c+tx;out[3]=a[2] *m.b+a[3] *m.d+ty;
-			out[4]=a[4] *m.a+a[5] *m.c+tx;out[5]=a[4] *m.b+a[5] *m.d+ty;
-			out[6]=a[6] *m.a+a[7] *m.c+tx;out[7]=a[6] *m.b+a[7] *m.d+ty;
+			out[0]=a0 *ma+a1 *mc+tx;out[1]=a0 *mb+a1 *md+ty;
+			out[2]=a2 *ma+a3 *mc+tx;out[3]=a2 *mb+a3 *md+ty;
+			out[4]=a4 *ma+a5 *mc+tx;out[5]=a4 *mb+a5 *md+ty;
+			out[6]=a6 *ma+a7 *mc+tx;out[7]=a6 *mb+a7 *md+ty;
 			}else {
-			out[0]=a[0]+tx;out[1]=a[1]+ty;
-			out[2]=a[2]+tx;out[3]=a[3]+ty;
-			out[4]=a[4]+tx;out[5]=a[5]+ty;
-			out[6]=a[6]+tx;out[7]=a[7]+ty;
+			out[0]=a0+tx;out[1]=a1+ty;
+			out[2]=a2+tx;out[3]=a3+ty;
+			out[4]=a4+tx;out[5]=a5+ty;
+			out[6]=a6+tx;out[7]=a7+ty;
 		}
 	}
 
@@ -6254,11 +6253,31 @@ var WebGLContext2D=(function(_super){
 			xoff=Math.tan(italicDeg *Math.PI / 180)*h;
 		};
 		var maxx=x+w;var maxy=y+h;
-		this._temp4Points[0]=x+xoff;this._temp4Points[1]=y;
-		this._temp4Points[2]=maxx+xoff;this._temp4Points[3]=y;
-		this._temp4Points[4]=maxx;this._temp4Points[5]=maxy;
-		this._temp4Points[6]=x;this._temp4Points[7]=maxy;
-		this.transform4Points(this._temp4Points,m,out);
+		var tx=m.tx;
+		var ty=m.ty;
+		var ma=m.a;
+		var mb=m.b;
+		var mc=m.c;
+		var md=m.d;
+		var a0=x+xoff;
+		var a1=y;
+		var a2=maxx+xoff;
+		var a3=y;
+		var a4=maxx;
+		var a5=maxy;
+		var a6=x;
+		var a7=maxy;
+		if (m._bTransform){
+			out[0]=a0 *ma+a1 *mc+tx;out[1]=a0 *mb+a1 *md+ty;
+			out[2]=a2 *ma+a3 *mc+tx;out[3]=a2 *mb+a3 *md+ty;
+			out[4]=a4 *ma+a5 *mc+tx;out[5]=a4 *mb+a5 *md+ty;
+			out[6]=a6 *ma+a7 *mc+tx;out[7]=a6 *mb+a7 *md+ty;
+			}else {
+			out[0]=a0+tx;out[1]=a1+ty;
+			out[2]=a2+tx;out[3]=a3+ty;
+			out[4]=a4+tx;out[5]=a5+ty;
+			out[6]=a6+tx;out[7]=a7+ty;
+		}
 	}
 
 	__proto.pushRT=function(){
@@ -6320,6 +6339,7 @@ var WebGLContext2D=(function(_super){
 	*/
 	__proto.drawTextureWithTransform=function(tex,x,y,width,height,transform,tx,ty,alpha,blendMode,colorfilter){
 		var oldcomp=null;
+		var curMat=this._curMat;
 		if (blendMode){
 			oldcomp=this.globalCompositeOperation;
 			this.globalCompositeOperation=blendMode;
@@ -6329,7 +6349,7 @@ var WebGLContext2D=(function(_super){
 			this.setColorFilter(colorfilter);
 		}
 		if (!transform){
-			this._drawTextureM(tex,x+tx,y+ty,width,height,null,alpha,null);
+			this._drawTextureM(tex,x+tx,y+ty,width,height,curMat,alpha,null);
 			if (blendMode){
 				this.globalCompositeOperation=oldcomp;
 			}
@@ -6338,15 +6358,15 @@ var WebGLContext2D=(function(_super){
 			}
 			return;
 		};
-		var curMat=this._curMat;
-		WebGLContext2D._tmpMatrix.a=transform.a;WebGLContext2D._tmpMatrix.b=transform.b;WebGLContext2D._tmpMatrix.c=transform.c;WebGLContext2D._tmpMatrix.d=transform.d;WebGLContext2D._tmpMatrix.tx=transform.tx+tx;WebGLContext2D._tmpMatrix.ty=transform.ty+ty;
-		WebGLContext2D._tmpMatrix._bTransform=transform._bTransform;
+		var tmpMat=this._tmpMatrix;
+		tmpMat.a=transform.a;tmpMat.b=transform.b;tmpMat.c=transform.c;tmpMat.d=transform.d;tmpMat.tx=transform.tx+tx;tmpMat.ty=transform.ty+ty;
+		tmpMat._bTransform=transform._bTransform;
 		if (transform && curMat._bTransform){
-			Matrix.mul(WebGLContext2D._tmpMatrix,curMat,WebGLContext2D._tmpMatrix);
-			transform=WebGLContext2D._tmpMatrix;
+			Matrix.mul(tmpMat,curMat,tmpMat);
+			transform=tmpMat;
 			transform._bTransform=true;
 			}else {
-			transform=WebGLContext2D._tmpMatrix;
+			transform=tmpMat;
 		}
 		this._drawTextureM(tex,x,y,width,height,transform,alpha,null);
 		if (blendMode){
@@ -6436,7 +6456,6 @@ var WebGLContext2D=(function(_super){
 			submit._numEle=6;
 			this._mesh.indexNum+=6;
 			this._mesh.vertNum+=4;
-			this._maxNumEle=Math.max(this._maxNumEle,submit._numEle);
 			this._submits[this._submits._length++]=submit;
 			this._curSubmit=Submit.RENDERBASE
 			return true;
@@ -6453,6 +6472,8 @@ var WebGLContext2D=(function(_super){
 			return;
 		}
 		this._drawCount++;
+		var tmpMat=this._tmpMatrix;
+		var triMesh=this._triangleMesh;
 		var oldColorFilter=null;
 		var needRestorFilter=false;
 		if (color){
@@ -6464,34 +6485,33 @@ var WebGLContext2D=(function(_super){
 		var webGLImg=tex.bitmap;
 		var preKey=this._curSubmit._key;
 		var sameKey=preKey.submitType===/*laya.webgl.submit.Submit.KEY_TRIANGLES*/4 && preKey.other===webGLImg.id && preKey.blendShader==this._nBlendType;
-		var rgba=this._mixRGBandAlpha(0xffffffff,this._shader2D.ALPHA *alpha);
-		var vertNum=vertices.length / 2;
-		var eleNum=indices.length;
-		if (this._triangleMesh.vertNum+vertNum > 65535){
-			this._triangleMesh=MeshTexture.getAMesh();
-			this.meshlist.push(this._triangleMesh);
+		if (triMesh.vertNum+vertices.length / 2 > 65535){
+			triMesh=this._triangleMesh=MeshTexture.getAMesh();
+			this.meshlist.push(triMesh);
 			sameKey=false;
 		}
 		if (!sameKey){
-			var submit=this._curSubmit=SubmitTexture.create(this,this._triangleMesh,Value2D.create(/*laya.webgl.shader.d2.ShaderDefines2D.TEXTURE2D*/0x01,0));
+			var submit=this._curSubmit=SubmitTexture.create(this,triMesh,Value2D.create(/*laya.webgl.shader.d2.ShaderDefines2D.TEXTURE2D*/0x01,0));
 			submit.shaderValue.textureHost=tex;
 			submit._renderType=/*laya.webgl.submit.Submit.TYPE_TEXTURE*/10016;
 			submit._key.submitType=/*laya.webgl.submit.Submit.KEY_TRIANGLES*/4;
 			submit._key.other=webGLImg.id;
 			this._copyClipInfo(submit,this._globalClipMatrix);
 			this._submits[this._submits._length++]=submit;
-		}
-		if (!matrix){
-			WebGLContext2D._tmpMatrix.a=1;WebGLContext2D._tmpMatrix.b=0;WebGLContext2D._tmpMatrix.c=0;WebGLContext2D._tmpMatrix.d=1;WebGLContext2D._tmpMatrix.tx=x;WebGLContext2D._tmpMatrix.ty=y;
-			}else {
-			WebGLContext2D._tmpMatrix.a=matrix.a;WebGLContext2D._tmpMatrix.b=matrix.b;WebGLContext2D._tmpMatrix.c=matrix.c;WebGLContext2D._tmpMatrix.d=matrix.d;WebGLContext2D._tmpMatrix.tx=matrix.tx+x;WebGLContext2D._tmpMatrix.ty=matrix.ty+y;
-		}
+		};
+		var rgba=this._mixRGBandAlpha(0xffffffff,this._shader2D.ALPHA *alpha);
 		if(!this._drawTriUseAbsMatrix){
-			Matrix.mul(WebGLContext2D._tmpMatrix,this._curMat,WebGLContext2D._tmpMatrix);
+			if (!matrix){
+				tmpMat.a=1;tmpMat.b=0;tmpMat.c=0;tmpMat.d=1;tmpMat.tx=x;tmpMat.ty=y;
+				}else {
+				tmpMat.a=matrix.a;tmpMat.b=matrix.b;tmpMat.c=matrix.c;tmpMat.d=matrix.d;tmpMat.tx=matrix.tx+x;tmpMat.ty=matrix.ty+y;
+			}
+			Matrix.mul(tmpMat,this._curMat,tmpMat);
+			triMesh.addData(vertices,uvs,indices,tmpMat,rgba);
+			}else {
+			triMesh.addData(vertices,uvs,indices,matrix,rgba);
 		}
-		this._triangleMesh.addData(vertices,uvs,indices,WebGLContext2D._tmpMatrix,rgba,this);
-		this._curSubmit._numEle+=eleNum;
-		this._maxNumEle=Math.max(this._maxNumEle,this._curSubmit._numEle);
+		this._curSubmit._numEle+=indices.length;
 		if (needRestorFilter){
 			this._colorFiler=oldColorFilter;
 			this._curSubmit=Submit.RENDERBASE;
@@ -6563,6 +6583,9 @@ var WebGLContext2D=(function(_super){
 				cm.a=this._clipRect.width;
 				cm.b=cm.c=0;
 				cm.d=this._clipRect.height;
+			}
+			if (this._incache){
+				this._clipInCache=true;
 			}
 		}
 		if (cm.a > 0 && cm.d > 0){
@@ -7034,6 +7057,9 @@ var WebGLContext2D=(function(_super){
 	}
 
 	__proto._mixRGBandAlpha=function(color,alpha){
+		if (alpha >=1){
+			return color;
+		};
 		var a=((color & 0xff000000)>>> 24);
 		if (a !=0){
 			a*=alpha;
@@ -7066,6 +7092,191 @@ var WebGLContext2D=(function(_super){
 
 	__proto._getPath=function(){
 		return this._path || (this._path=new Path());
+	}
+
+	/**
+	*专用函数。通过循环创建来水平填充
+	*@param tex
+	*@param bmpid
+	*@param uv 希望循环的部分的uv
+	*@param oriw
+	*@param orih
+	*@param x
+	*@param y
+	*@param w
+	*/
+	__proto._fillTexture_h=function(tex,imgid,uv,oriw,orih,x,y,w){
+		var stx=x;
+		var num=Math.floor(w / oriw);
+		var left=w % oriw;
+		for (var i=0;i < num;i++){
+			this._inner_drawTexture(tex,imgid,stx,y,oriw,orih,this._curMat,uv,1,false);
+			stx+=oriw;
+		}
+		if (left > 0){
+			var du=uv[2]-uv[0];
+			var uvr=uv[0]+du *(left / oriw);
+			var tuv=WebGLContext2D.tmpuv1;
+			tuv[0]=uv[0];tuv[1]=uv[1];tuv[2]=uvr;tuv[3]=uv[3];
+			tuv[4]=uvr;tuv[5]=uv[5];tuv[6]=uv[6];tuv[7]=uv[7];
+			this._inner_drawTexture(tex,imgid,stx,y,left,orih,this._curMat,tuv,1,false);
+		}
+	}
+
+	/**
+	*专用函数。通过循环创建来垂直填充
+	*@param tex
+	*@param imgid
+	*@param uv
+	*@param oriw
+	*@param orih
+	*@param x
+	*@param y
+	*@param h
+	*/
+	__proto._fillTexture_v=function(tex,imgid,uv,oriw,orih,x,y,h){
+		var sty=y;
+		var num=Math.floor(h / orih);
+		var left=h % orih;
+		for (var i=0;i < num;i++){
+			this._inner_drawTexture(tex,imgid,x,sty,oriw,orih,this._curMat,uv,1,false);
+			sty+=orih;
+		}
+		if (left > 0){
+			var dv=uv[7]-uv[1];
+			var uvb=uv[1]+dv *(left / orih);
+			var tuv=WebGLContext2D.tmpuv1;
+			tuv[0]=uv[0];tuv[1]=uv[1];tuv[2]=uv[2];tuv[3]=uv[3];
+			tuv[4]=uv[4];tuv[5]=uvb;tuv[6]=uv[6];tuv[7]=uvb;
+			this._inner_drawTexture(tex,imgid,x,sty,oriw,left,this._curMat,tuv,1,false);
+		}
+	}
+
+	__proto.drawTextureWithSizeGrid=function(tex,tx,ty,width,height,sizeGrid,gx,gy){
+		if (!tex._getSource())
+			return;
+		tx+=gx;
+		ty+=gy;
+		var uv=tex.uv,w=tex.bitmap._width,h=tex.bitmap._height;
+		var top=sizeGrid[0];
+		var left=sizeGrid[3];
+		var d_top=top / h;
+		var d_left=left / w;
+		var right=sizeGrid[1];
+		var bottom=sizeGrid[2];
+		var d_right=right / w;
+		var d_bottom=bottom / h;
+		var repeat=sizeGrid[4];
+		var needClip=false;
+		if (width==w){
+			left=right=0;
+		}
+		if (height==h){
+			top=bottom=0;
+		}
+		if (left+right > width){
+			var clipWidth=width;
+			needClip=true;
+			width=left+right;
+			this.save();
+			this.clipRect(0+tx,0+ty,clipWidth,height);
+		};
+		var imgid=tex.bitmap.id;
+		var mat=this._curMat;
+		var tuv=this._tempUV;
+		var uvl=uv[0];
+		var uvt=uv[1];
+		var uvr=uv[4];
+		var uvb=uv[5];
+		var uvl_=uvl;
+		var uvt_=uvt;
+		var uvr_=uvr;
+		var uvb_=uvb;
+		if(left && top){
+			uvr_=uvl+d_left;
+			uvb_=uvt+d_top;
+			tuv[0]=uvl,tuv[1]=uvt,tuv[2]=uvr_,tuv[3]=uvt,
+			tuv[4]=uvr_,tuv[5]=uvb_,tuv[6]=uvl,tuv[7]=uvb_;
+			this._inner_drawTexture(tex,imgid,tx,ty,left,top,mat,tuv,1,false);
+		}
+		if (right && top){
+			uvl_=uvr-d_right;uvt_=uvt;
+			uvr_=uvr;uvb_=uvt+d_top;
+			tuv[0]=uvl_,tuv[1]=uvt_,tuv[2]=uvr_,tuv[3]=uvt_,
+			tuv[4]=uvr_,tuv[5]=uvb_,tuv[6]=uvl_,tuv[7]=uvb_;
+			this._inner_drawTexture(tex,imgid,width-right+tx,0+ty,right,top,mat,tuv,1,false);
+		}
+		if (left && bottom){
+			uvl_=uvl;uvt_=uvb-d_bottom;
+			uvr_=uvl+d_left;uvb_=uvb;
+			tuv[0]=uvl_,tuv[1]=uvt_,tuv[2]=uvr_,tuv[3]=uvt_,
+			tuv[4]=uvr_,tuv[5]=uvb_,tuv[6]=uvl_,tuv[7]=uvb_;
+			this._inner_drawTexture(tex,imgid,0+tx,height-bottom+ty,left,bottom,mat,tuv,1,false);
+		}
+		if (right && bottom){
+			uvl_=uvr-d_right;uvt_=uvb-d_bottom;
+			uvr_=uvr;uvb_=uvb;
+			tuv[0]=uvl_,tuv[1]=uvt_,tuv[2]=uvr_,tuv[3]=uvt_,
+			tuv[4]=uvr_,tuv[5]=uvb_,tuv[6]=uvl_,tuv[7]=uvb_;
+			this._inner_drawTexture(tex,imgid,width-right+tx,height-bottom+ty,right,bottom,mat,tuv,1,false);
+		}
+		if (top){
+			uvl_=uvl+d_left;uvt_=uvt;
+			uvr_=uvr-d_right;uvb_=uvt+d_top;
+			tuv[0]=uvl_,tuv[1]=uvt_,tuv[2]=uvr_,tuv[3]=uvt_,
+			tuv[4]=uvr_,tuv[5]=uvb_,tuv[6]=uvl_,tuv[7]=uvb_;
+			if (repeat){
+				this._fillTexture_h(tex,imgid,tuv,tex.width-left-right,top,left+tx,ty,width-left-right);
+				}else {
+				this._inner_drawTexture(tex,imgid,left+tx,ty,width-left-right,top,mat,tuv,1,false);
+			}
+		}
+		if (bottom){
+			uvl_=uvl+d_left;uvt_=uvb-d_bottom;
+			uvr_=uvr-d_right;uvb_=uvb;
+			tuv[0]=uvl_,tuv[1]=uvt_,tuv[2]=uvr_,tuv[3]=uvt_,
+			tuv[4]=uvr_,tuv[5]=uvb_,tuv[6]=uvl_,tuv[7]=uvb_;
+			if (repeat){
+				this._fillTexture_h(tex,imgid,tuv,tex.width-left-right,bottom,left+tx,height-bottom+ty,width-left-right);
+				}else{
+				this._inner_drawTexture(tex,imgid,left+tx,height-bottom+ty,width-left-right,bottom,mat,tuv,1,false);
+			}
+		}
+		if (left){
+			uvl_=uvl;uvt_=uvt+d_top;
+			uvr_=uvl+d_left;uvb_=uvb-d_bottom;
+			tuv[0]=uvl_,tuv[1]=uvt_,tuv[2]=uvr_,tuv[3]=uvt_,
+			tuv[4]=uvr_,tuv[5]=uvb_,tuv[6]=uvl_,tuv[7]=uvb_;
+			if (repeat){
+				this._fillTexture_v(tex,imgid,tuv,left,tex.height-top-bottom,tx,top+ty,height-top-bottom);
+				}else{
+				this._inner_drawTexture(tex,imgid,tx,top+ty,left,height-top-bottom,mat,tuv,1,false);
+			}
+		}
+		if (right){
+			uvl_=uvr-d_right;uvt_=uvt+d_top;
+			uvr_=uvr;uvb_=uvb-d_bottom;
+			tuv[0]=uvl_,tuv[1]=uvt_,tuv[2]=uvr_,tuv[3]=uvt_,
+			tuv[4]=uvr_,tuv[5]=uvb_,tuv[6]=uvl_,tuv[7]=uvb_;
+			if (repeat){
+				this._fillTexture_v(tex,imgid,tuv,right,tex.height-top-bottom,width-right+tx,top+ty,height-top-bottom);
+				}else{
+				this._inner_drawTexture(tex,imgid,width-right+tx,top+ty,right,height-top-bottom,mat,tuv,1,false);
+			}
+		}
+		uvl_=uvl+d_left;uvt_=uvt+d_top;
+		uvr_=uvr-d_right;uvb_=uvb-d_bottom;
+		tuv[0]=uvl_,tuv[1]=uvt_,tuv[2]=uvr_,tuv[3]=uvt_,
+		tuv[4]=uvr_,tuv[5]=uvb_,tuv[6]=uvl_,tuv[7]=uvb_;
+		if (repeat){
+			var tuvr=WebGLContext2D.tmpUVRect;
+			tuvr[0]=uvl_;tuvr[1]=uvt_;
+			tuvr[2]=uvr_-uvl_;tuvr[3]=uvb_-uvt_;
+			this._fillTexture(tex,tex.width-left-right,tex.height-top-bottom,tuvr,left+tx,top+ty,width-left-right,height-top-bottom,'repeat',0,0);
+			}else{
+			this._inner_drawTexture(tex,imgid,left+tx,top+ty,width-left-right,height-top-bottom,mat,tuv,1,false);
+		}
+		if (needClip)this.restore();
 	}
 
 	/*,_shader2D.ALPHA=1*/
@@ -7160,39 +7371,24 @@ var WebGLContext2D=(function(_super){
 		WebGLContext.setCullFace(gl,false);
 		WebGLContext.setDepthMask(gl,true);
 		WebGLContext.setFrontFace(gl,/*laya.webgl.WebGLContext.CCW*/0x0901);
-		gl.viewport(0,0,RenderState2D.width,RenderState2D.height);
+		if (!Render.isConchApp){
+			gl.viewport(0,0,RenderState2D.width,RenderState2D.height);
+		}
 	}
 
-	WebGLContext2D._tempPoint=new Point();
 	WebGLContext2D._SUBMITVBSIZE=32000;
 	WebGLContext2D._MAXSIZE=99999999;
 	WebGLContext2D._MAXVERTNUM=65535;
 	WebGLContext2D.MAXCLIPRECT=new Rectangle(0,0,99999999,99999999);
 	WebGLContext2D._COUNT=0;
-	WebGLContext2D._tmpMatrix=new Matrix();
 	WebGLContext2D.SEGNUM=32;
 	WebGLContext2D._contextcount=0;
 	WebGLContext2D._clipID_Gen=0;
 	WebGLContext2D.defTexture=null;
 	__static(WebGLContext2D,
-	['_drawStyleTemp',function(){return this._drawStyleTemp=new DrawStyle(null);},'_keyMap',function(){return this._keyMap=new StringKey();},'_drawTexToDrawTri_Vert',function(){return this._drawTexToDrawTri_Vert=new Float32Array(8);},'_drawTexToDrawTri_Index',function(){return this._drawTexToDrawTri_Index=new Uint16Array([0,1,2,0,2,3]);},'_textRender',function(){return this._textRender=new TextRender();}
+	['_textRender',function(){return this._textRender=new TextRender();},'tmpuv1',function(){return this.tmpuv1=[0,0,0,0,0,0,0,0];},'tmpUV',function(){return this.tmpUV=[0,0,0,0,0,0,0,0];},'tmpUVRect',function(){return this.tmpUVRect=[0,0,0,0];}
 	]);
 	WebGLContext2D.__init$=function(){
-		/*下面的方式是有bug的。canvas是直接save，restore，现在是为了优化，但是有bug，所以先不重载了
-		override public function saveTransform(matrix:Matrix):void {
-			this._curMat.copyTo(matrix);
-		}
-		override public function restoreTransform(matrix:Matrix):void {
-			matrix.copyTo(this._curMat);
-		}
-		override public function transformByMatrix(matrix:Matrix,tx:Number,ty:Number):void {
-			var mat:Matrix=_curMat;
-			matrix.setTranslate(tx,ty);
-			Matrix.mul(matrix,mat,mat);
-			matrix.setTranslate(0,0);
-			mat._bTransform=true;
-		}
-		*/
 		//class ContextParams
 		ContextParams=(function(){
 			function ContextParams(){
@@ -7284,7 +7480,7 @@ var PrimitiveSV=(function(_super){
 var MeshQuadTexture=(function(_super){
 	//private static var _num;
 	function MeshQuadTexture(){
-		MeshQuadTexture.__super.call(this,laya.webgl.utils.MeshQuadTexture.const_stride,4,4);
+		MeshQuadTexture.__super.call(this,/*CLASS CONST:laya.webgl.utils.MeshQuadTexture.const_stride*/24,4,4);
 		this.canReuse=true;
 		this.setAttributes(laya.webgl.utils.MeshQuadTexture._fixattriInfo);
 		if(!laya.webgl.utils.MeshQuadTexture._fixib){
@@ -7324,7 +7520,7 @@ var MeshQuadTexture=(function(_super){
 	__proto.addQuad=function(pos,uv,color,useTex){
 		var vb=this._vb;
 		var vpos=(vb._byteLength >> 2);
-		vb.setByteLength((vpos+laya.webgl.utils.MeshQuadTexture.const_stride)<<2);
+		vb.setByteLength((vpos+/*CLASS CONST:laya.webgl.utils.MeshQuadTexture.const_stride*/24)<<2);
 		var vbdata=vb._floatArray32 || vb.getFloat32Array();
 		var vbu32Arr=vb._uint32Array;
 		var cpos=vpos;
@@ -7337,10 +7533,13 @@ var MeshQuadTexture=(function(_super){
 	}
 
 	MeshQuadTexture.getAMesh=function(){
+		var ret=null;
 		if (laya.webgl.utils.MeshQuadTexture._POOL.length){
-			return laya.webgl.utils.MeshQuadTexture._POOL.pop();
-		}
-		return new MeshQuadTexture();
+			ret=laya.webgl.utils.MeshQuadTexture._POOL.pop();
+		}else
+		ret=new MeshQuadTexture();
+		ret._vb._resizeBuffer(64 *1024 *24,false);
+		return ret;
 	}
 
 	MeshQuadTexture.const_stride=24;
@@ -7363,7 +7562,7 @@ var MeshQuadTexture=(function(_super){
 //class laya.webgl.utils.MeshVG extends laya.webgl.utils.Mesh2D
 var MeshVG=(function(_super){
 	function MeshVG(){
-		MeshVG.__super.call(this,laya.webgl.utils.MeshVG.const_stride,4,4);
+		MeshVG.__super.call(this,/*CLASS CONST:laya.webgl.utils.MeshVG.const_stride*/12,4,4);
 		this.canReuse=true;
 		this.setAttributes(laya.webgl.utils.MeshVG._fixattriInfo);
 	}
@@ -7377,7 +7576,7 @@ var MeshVG=(function(_super){
 	*@param ib index数组。
 	*/
 	__proto.addVertAndIBToMesh=function(ctx,points,rgba,ib){
-		var startpos=this._vb.needSize(points.length / 2 *MeshVG.const_stride);
+		var startpos=this._vb.needSize(points.length / 2 *12);
 		var f32pos=startpos >> 2;
 		var vbdata=this._vb._floatArray32 || this._vb.getFloat32Array();
 		var vbu32Arr=this._vb._uint32Array;
@@ -7413,10 +7612,13 @@ var MeshVG=(function(_super){
 	}
 
 	MeshVG.getAMesh=function(){
+		var ret;
 		if (laya.webgl.utils.MeshVG._POOL.length){
-			return laya.webgl.utils.MeshVG._POOL.pop();
-		}
-		return new MeshVG();
+			ret=laya.webgl.utils.MeshVG._POOL.pop();
+		}else
+		ret=new MeshVG();
+		ret._vb._resizeBuffer(64 *1024 *12,false);
+		return ret;
 	}
 
 	MeshVG.const_stride=12;
@@ -7436,43 +7638,56 @@ var MeshVG=(function(_super){
 //class laya.webgl.utils.MeshTexture extends laya.webgl.utils.Mesh2D
 var MeshTexture=(function(_super){
 	function MeshTexture(){
-		MeshTexture.__super.call(this,laya.webgl.utils.MeshTexture.const_stride,4,4);
+		MeshTexture.__super.call(this,/*CLASS CONST:laya.webgl.utils.MeshTexture.const_stride*/24,4,4);
 		this.canReuse=true;
 		this.setAttributes(laya.webgl.utils.MeshTexture._fixattriInfo);
 	}
 
 	__class(MeshTexture,'laya.webgl.utils.MeshTexture',_super);
 	var __proto=MeshTexture.prototype;
-	__proto.addData=function(vertices,uvs,idx,matrix,rgba,ctx){
-		var vertsz=vertices.length / 2;
-		var startpos=this._vb.needSize(vertsz *MeshTexture.const_stride);
+	__proto.addData=function(vertices,uvs,idx,matrix,rgba){
+		var vb=this._vb;
+		var ib=this._ib;
+		var vertsz=vertices.length >>1;
+		var startpos=vb.needSize(vertsz *24);
 		var f32pos=startpos >> 2;
-		var vbdata=this._vb._floatArray32 || this._vb.getFloat32Array();
-		var vbu32Arr=this._vb._uint32Array;
+		var vbdata=vb._floatArray32 || vb.getFloat32Array();
+		var vbu32Arr=vb._uint32Array;
 		var ci=0;
-		for (var i=0;i < vertsz;i++){
+		var m00=matrix.a;
+		var m01=matrix.b;
+		var m10=matrix.c;
+		var m11=matrix.d;
+		var tx=matrix.tx;
+		var ty=matrix.ty;
+		var i=0;
+		for (i=0;i < vertsz;i++){
 			var x=vertices[ci],y=vertices[ci+1];
-			var x1=x *matrix.a+y *matrix.c+matrix.tx;
-			var y1=x *matrix.b+y *matrix.d+matrix.ty;
-			vbdata[f32pos++]=x1;vbdata[f32pos++]=y1;
-			vbdata[f32pos++]=uvs[ci];vbdata[f32pos++]=uvs[ci+1];
+			vbdata[f32pos]=x *m00+y *m10+tx;
+			vbdata[f32pos+1]=x *m01+y *m11+ty;
+			vbdata[f32pos+2]=uvs[ci];
+			vbdata[f32pos+3]=uvs[ci+1];
+			vbu32Arr[f32pos+4]=rgba;
+			vbu32Arr[f32pos+5]=0xff;
+			f32pos+=6;
 			ci+=2;
-			vbu32Arr[f32pos++]=rgba;
-			vbu32Arr[f32pos++]=0xff;
 		}
-		this._vb.setNeedUpload();
+		vb.setNeedUpload();
 		var vertN=this.vertNum;
+		var sz=idx.length;
+		var stib=ib.needSize(idx.byteLength);
+		var cidx=ib.getUint16Array();
+		var stibid=stib >> 1;
 		if (vertN > 0){
-			var sz=idx.length;
-			if (sz > MeshTexture.tmpIdx.length)MeshTexture.tmpIdx=new Uint16Array(sz);
-			for (var ii=0;ii < sz;ii++){
-				MeshTexture.tmpIdx[ii]=idx[ii]+vertN;
+			var end=stibid+sz;
+			var si=0;
+			for (i=stibid;i < end;i++,si++){
+				cidx[i]=idx[si]+vertN;
 			}
-			this._ib.appendU16Array(MeshTexture.tmpIdx,idx.length);
 			}else {
-			this._ib.append(idx);
+			cidx.set(idx,stibid);
 		}
-		this._ib.setNeedUpload();
+		ib.setNeedUpload();
 		this.vertNum+=vertsz;
 		this.indexNum+=idx.length;
 	}
@@ -7496,10 +7711,13 @@ var MeshTexture=(function(_super){
 	}
 
 	MeshTexture.getAMesh=function(){
+		var ret;
 		if (laya.webgl.utils.MeshTexture._POOL.length){
-			return laya.webgl.utils.MeshTexture._POOL.pop();
+			ret=laya.webgl.utils.MeshTexture._POOL.pop();
 		}
-		return new MeshTexture();
+		else ret=new MeshTexture();
+		ret._vb._resizeBuffer(64 *1024 *24,false);
+		return ret;
 	}
 
 	MeshTexture.const_stride=24;
@@ -7508,7 +7726,7 @@ var MeshTexture=(function(_super){
 	['_fixattriInfo',function(){return this._fixattriInfo=[
 		/*laya.webgl.WebGLContext.FLOAT*/0x1406,4,0,
 		/*laya.webgl.WebGLContext.UNSIGNED_BYTE*/0x1401,4,16,
-		/*laya.webgl.WebGLContext.UNSIGNED_BYTE*/0x1401,4,20];},'tmpIdx',function(){return this.tmpIdx=new Uint16Array(4);}
+		/*laya.webgl.WebGLContext.UNSIGNED_BYTE*/0x1401,4,20];}
 	]);
 	return MeshTexture;
 })(Mesh2D)
@@ -7568,6 +7786,8 @@ var ShaderDefines2D=(function(_super){
 //class laya.webgl.resource.CharRender_Canvas extends laya.webgl.resource.ICharRender
 var CharRender_Canvas=(function(_super){
 	function CharRender_Canvas(maxw,maxh,scalefont,useImageData,showdbg){
+		// HTMLCanvasElement;
+		this.ctx=null;
 		this.lastScaleX=1.0;
 		this.lastScaleY=1.0;
 		this.needResetScale=false;
@@ -7592,19 +7812,19 @@ var CharRender_Canvas=(function(_super){
 			CharRender_Canvas.canvas.style.left="-10000px";
 			CharRender_Canvas.canvas.style.position="absolute";
 			/*__JS__ */document.body.appendChild(CharRender_Canvas.canvas);;
-			CharRender_Canvas.ctx=CharRender_Canvas.canvas.getContext('2d');
+			this.ctx=CharRender_Canvas.canvas.getContext('2d');
 		}
 	}
 
 	__class(CharRender_Canvas,'laya.webgl.resource.CharRender_Canvas',_super);
 	var __proto=CharRender_Canvas.prototype;
 	__proto.getWidth=function(font,str){
-		if (!CharRender_Canvas.ctx)return 0;
-		if(CharRender_Canvas.ctx._lastFont!=font){
-			CharRender_Canvas.ctx.font=font;
-			CharRender_Canvas.ctx._lastFont=font;
+		if (!this.ctx)return 0;
+		if(this.ctx._lastFont!=font){
+			this.ctx.font=font;
+			this.ctx._lastFont=font;
 		}
-		return CharRender_Canvas.ctx.measureText(str).width;
+		return this.ctx.measureText(str).width;
 	}
 
 	__proto.scale=function(sx,sy){
@@ -7614,7 +7834,7 @@ var CharRender_Canvas=(function(_super){
 			return;
 		}
 		if (this.lastScaleX !=sx || this.lastScaleY !=sy){
-			CharRender_Canvas.ctx.setTransform(sx,0,0,sy,0,0);
+			this.ctx.setTransform(sx,0,0,sy,0,0);
 			this.lastScaleX=sx;
 			this.lastScaleY=sy;
 		}
@@ -7630,11 +7850,12 @@ var CharRender_Canvas=(function(_super){
 	__proto.getCharBmp=function(char,font,lineWidth,colStr,strokeColStr,cri,margin_left,margin_top,margin_right,margin_bottom,rect){
 		if (!this.supportImageData)
 			return this.getCharCanvas(char,font,lineWidth,colStr,strokeColStr,cri,margin_left,margin_top,margin_right,margin_bottom);
-		if (CharRender_Canvas.ctx.font !=font){
-			CharRender_Canvas.ctx.font=font;
-			CharRender_Canvas.ctx._lastFont=font;
+		var ctx=this.ctx;
+		if (ctx.font !=font){
+			ctx.font=font;
+			ctx._lastFont=font;
 		}
-		cri.width=CharRender_Canvas.ctx.measureText(char).width;
+		cri.width=ctx.measureText(char).width;
 		var w=cri.width *this.lastScaleX;
 		var h=cri.height*this.lastScaleY;
 		w+=(margin_left+margin_right)*this.lastScaleX;
@@ -7649,38 +7870,39 @@ var CharRender_Canvas=(function(_super){
 			clearW=Math.max(clearW,rect[0]+rect[2]+1);
 			clearH=Math.max(clearH,rect[1]+rect[3]+1);
 		}
-		CharRender_Canvas.ctx.clearRect(0,0,clearW,clearH);
-		CharRender_Canvas.ctx.save();
-		CharRender_Canvas.ctx.textBaseline="top";
+		ctx.clearRect(0,0,clearW,clearH);
+		ctx.save();
+		ctx.textBaseline="top";
 		if (lineWidth > 0){
-			CharRender_Canvas.ctx.strokeStyle=strokeColStr;
-			CharRender_Canvas.ctx.lineWidth=lineWidth;
-			CharRender_Canvas.ctx.strokeText(char,margin_left,margin_top);
+			ctx.strokeStyle=strokeColStr;
+			ctx.lineWidth=lineWidth;
+			ctx.strokeText(char,margin_left,margin_top);
 		}
-		CharRender_Canvas.ctx.fillStyle=colStr;
-		CharRender_Canvas.ctx.fillText(char,margin_left,margin_top);
+		ctx.fillStyle=colStr;
+		ctx.fillText(char,margin_left,margin_top);
 		if (this.showDbgInfo){
-			CharRender_Canvas.ctx.strokeStyle='#ff0000';
-			CharRender_Canvas.ctx.strokeRect(0,0,w,h);
-			CharRender_Canvas.ctx.strokeStyle='#00ff00';
-			CharRender_Canvas.ctx.strokeRect(margin_left,margin_top,cri.width,cri.height);
+			ctx.strokeStyle='#ff0000';
+			ctx.strokeRect(0,0,w,h);
+			ctx.strokeStyle='#00ff00';
+			ctx.strokeRect(margin_left,margin_top,cri.width,cri.height);
 		}
 		if (rect){
 			if (rect[2]==-1)rect[2]=Math.ceil((cri.width+lineWidth*2)*this.lastScaleX);
 		};
-		var imgdt=rect?(CharRender_Canvas.ctx.getImageData(rect[0],rect[1],rect[2],rect[3])):(CharRender_Canvas.ctx.getImageData(0,0,w,h));
-		CharRender_Canvas.ctx.restore();
+		var imgdt=rect?(ctx.getImageData(rect[0],rect[1],rect[2],rect[3])):(ctx.getImageData(0,0,w,h));
+		ctx.restore();
 		cri.bmpWidth=imgdt.width;
 		cri.bmpHeight=imgdt.height;
 		return imgdt;
 	}
 
 	__proto.getCharCanvas=function(char,font,lineWidth,colStr,strokeColStr,cri,margin_left,margin_top,margin_right,margin_bottom){
-		if (CharRender_Canvas.ctx.font !=font){
-			CharRender_Canvas.ctx.font=font;
-			CharRender_Canvas.ctx._lastFont=font;
+		var ctx=this.ctx;
+		if (ctx.font !=font){
+			ctx.font=font;
+			ctx._lastFont=font;
 		}
-		cri.width=CharRender_Canvas.ctx.measureText(char).width;
+		cri.width=ctx.measureText(char).width;
 		var w=cri.width *this.lastScaleX;
 		var h=cri.height*this.lastScaleY;
 		w+=(margin_left+margin_right)*this.lastScaleX;
@@ -7689,37 +7911,37 @@ var CharRender_Canvas=(function(_super){
 		h=Math.min(h,this.maxTexH);
 		CharRender_Canvas.canvas.width=Math.min(w+1,this.maxTexW);
 		CharRender_Canvas.canvas.height=Math.min(h+1,this.maxTexH);
-		CharRender_Canvas.ctx.font=font;
-		CharRender_Canvas.ctx.clearRect(0,0,w+1+lineWidth,h+1+lineWidth);
-		CharRender_Canvas.ctx.setTransform(1,0,0,1,0,0);
-		CharRender_Canvas.ctx.save();
+		ctx.font=font;
+		ctx.clearRect(0,0,w+1+lineWidth,h+1+lineWidth);
+		ctx.setTransform(1,0,0,1,0,0);
+		ctx.save();
 		if (this.scaleFontSize){
-			CharRender_Canvas.ctx.scale(this.lastScaleX,this.lastScaleY);
+			ctx.scale(this.lastScaleX,this.lastScaleY);
 		}
-		CharRender_Canvas.ctx.translate(margin_left,margin_top);
-		CharRender_Canvas.ctx.textAlign="left";
-		CharRender_Canvas.ctx.textBaseline="top";
+		ctx.translate(margin_left,margin_top);
+		ctx.textAlign="left";
+		ctx.textBaseline="top";
 		if (lineWidth > 0){
-			CharRender_Canvas.ctx.strokeStyle=strokeColStr;
-			CharRender_Canvas.ctx.fillStyle=colStr;
-			CharRender_Canvas.ctx.lineWidth=lineWidth;
-			if (CharRender_Canvas.ctx.fillAndStrokeText){
-				CharRender_Canvas.ctx.fillAndStrokeText(char,0,0);
+			ctx.strokeStyle=strokeColStr;
+			ctx.fillStyle=colStr;
+			ctx.lineWidth=lineWidth;
+			if (ctx.fillAndStrokeText){
+				ctx.fillAndStrokeText(char,0,0);
 				}else{
-				CharRender_Canvas.ctx.strokeText(char,0,0);
-				CharRender_Canvas.ctx.fillText(char,0,0);
+				ctx.strokeText(char,0,0);
+				ctx.fillText(char,0,0);
 			}
 			}else {
-			CharRender_Canvas.ctx.fillStyle=colStr;
-			CharRender_Canvas.ctx.fillText(char,0,0);
+			ctx.fillStyle=colStr;
+			ctx.fillText(char,0,0);
 		}
 		if (this.showDbgInfo){
-			CharRender_Canvas.ctx.strokeStyle='#ff0000';
-			CharRender_Canvas.ctx.strokeRect(0,0,w,h);
-			CharRender_Canvas.ctx.strokeStyle='#00ff00';
-			CharRender_Canvas.ctx.strokeRect(0,0,cri.width,cri.height);
+			ctx.strokeStyle='#ff0000';
+			ctx.strokeRect(0,0,w,h);
+			ctx.strokeStyle='#00ff00';
+			ctx.strokeRect(0,0,cri.width,cri.height);
 		}
-		CharRender_Canvas.ctx.restore();
+		ctx.restore();
 		cri.bmpWidth=CharRender_Canvas.canvas.width;
 		cri.bmpHeight=CharRender_Canvas.canvas.height;
 		return CharRender_Canvas.canvas;
@@ -7734,12 +7956,11 @@ var CharRender_Canvas=(function(_super){
 		if (w > 2048){
 			console.warn("画文字设置的宽度太大，超过2048了");
 		}
-		CharRender_Canvas.ctx.setTransform(1,0,0,1,0,0);
-		CharRender_Canvas.ctx.scale(this.lastScaleX,this.lastScaleY);
+		this.ctx.setTransform(1,0,0,1,0,0);
+		this.ctx.scale(this.lastScaleX,this.lastScaleY);
 	});
 
 	CharRender_Canvas.canvas=null;
-	CharRender_Canvas.ctx=null;
 	return CharRender_Canvas;
 })(ICharRender)
 
@@ -7801,11 +8022,76 @@ var CharRender_Native=(function(_super){
 
 
 /**
+*drawImage，fillRect等会用到的简单的mesh。每次添加必然是一个四边形。
+*/
+//class laya.webgl.utils.MeshParticle2D extends laya.webgl.utils.Mesh2D
+var MeshParticle2D=(function(_super){
+	//TODO:coverage
+	function MeshParticle2D(maxNum){
+		MeshParticle2D.__super.call(this,/*CLASS CONST:laya.webgl.utils.MeshParticle2D.const_stride*/116,maxNum*4*116,4);
+		this.canReuse=true;
+		this.setAttributes(laya.webgl.utils.MeshParticle2D._fixattriInfo);
+		this.createQuadIB(maxNum);
+		this._quadNum=maxNum;
+	}
+
+	__class(MeshParticle2D,'laya.webgl.utils.MeshParticle2D',_super);
+	var __proto=MeshParticle2D.prototype;
+	__proto.setMaxParticleNum=function(maxNum){
+		this._vb._resizeBuffer(maxNum *4 *116,false);
+		this.createQuadIB(maxNum);
+	}
+
+	//TODO:coverage
+	__proto.releaseMesh=function(){;
+		this._vb.setByteLength(0);
+		this.vertNum=0;
+		this.indexNum=0;
+		laya.webgl.utils.MeshParticle2D._POOL.push(this);
+	}
+
+	//TODO:coverage
+	__proto.destroy=function(){
+		this._ib.destroy();
+		this._vb.destroy();
+		this._vb.deleteBuffer();
+	}
+
+	MeshParticle2D.getAMesh=function(maxNum){
+		if (laya.webgl.utils.MeshParticle2D._POOL.length){
+			var ret=laya.webgl.utils.MeshParticle2D._POOL.pop();
+			ret.setMaxParticleNum(maxNum);
+			return ret;
+		}
+		return new MeshParticle2D(maxNum);
+	}
+
+	MeshParticle2D.const_stride=116;
+	MeshParticle2D._POOL=[];
+	__static(MeshParticle2D,
+	['_fixattriInfo',function(){return this._fixattriInfo=[
+		/*laya.webgl.WebGLContext.FLOAT*/0x1406,4,0,
+		/*laya.webgl.WebGLContext.FLOAT*/0x1406,3,16,
+		/*laya.webgl.WebGLContext.FLOAT*/0x1406,3,28,
+		/*laya.webgl.WebGLContext.FLOAT*/0x1406,4,40,
+		/*laya.webgl.WebGLContext.FLOAT*/0x1406,4,56,
+		/*laya.webgl.WebGLContext.FLOAT*/0x1406,3,72,
+		/*laya.webgl.WebGLContext.FLOAT*/0x1406,2,84,
+		/*laya.webgl.WebGLContext.FLOAT*/0x1406,4,92,
+		/*laya.webgl.WebGLContext.FLOAT*/0x1406,1,108,
+		/*laya.webgl.WebGLContext.FLOAT*/0x1406,1,112];}
+	]);
+	return MeshParticle2D;
+})(Mesh2D)
+
+
+/**
 *cache as normal 模式下的生成的canvas的渲染。
 */
 //class laya.webgl.submit.SubmitCanvas extends laya.webgl.submit.Submit
 var SubmitCanvas=(function(_super){
 	function SubmitCanvas(){
+		// 用来计算当前的世界矩阵
 		//this.canv=null;
 		this._matrix=new Matrix();
 		this._matrix4=CONST3D2D.defaultMatrix4.concat();
@@ -7882,71 +8168,6 @@ var SubmitCanvas=(function(_super){
 	SubmitCanvas.POOL=(SubmitCanvas.POOL=[],SubmitCanvas.POOL._length=0,SubmitCanvas.POOL);
 	return SubmitCanvas;
 })(Submit)
-
-
-/**
-*drawImage，fillRect等会用到的简单的mesh。每次添加必然是一个四边形。
-*/
-//class laya.webgl.utils.MeshParticle2D extends laya.webgl.utils.Mesh2D
-var MeshParticle2D=(function(_super){
-	//TODO:coverage
-	function MeshParticle2D(maxNum){
-		MeshParticle2D.__super.call(this,laya.webgl.utils.MeshParticle2D.const_stride,maxNum*4*MeshParticle2D.const_stride,4);
-		this.canReuse=true;
-		this.setAttributes(laya.webgl.utils.MeshParticle2D._fixattriInfo);
-		this.createQuadIB(maxNum);
-		this._quadNum=maxNum;
-	}
-
-	__class(MeshParticle2D,'laya.webgl.utils.MeshParticle2D',_super);
-	var __proto=MeshParticle2D.prototype;
-	__proto.setMaxParticleNum=function(maxNum){
-		this._vb._resizeBuffer(maxNum *4 *MeshParticle2D.const_stride,false);
-		this.createQuadIB(maxNum);
-	}
-
-	//TODO:coverage
-	__proto.releaseMesh=function(){
-		debugger;
-		this._vb.setByteLength(0);
-		this.vertNum=0;
-		this.indexNum=0;
-		laya.webgl.utils.MeshParticle2D._POOL.push(this);
-	}
-
-	//TODO:coverage
-	__proto.destroy=function(){
-		this._ib.destroy();
-		this._vb.destroy();
-		this._vb.deleteBuffer();
-	}
-
-	MeshParticle2D.getAMesh=function(maxNum){
-		if (laya.webgl.utils.MeshParticle2D._POOL.length){
-			var ret=laya.webgl.utils.MeshParticle2D._POOL.pop();
-			ret.setMaxParticleNum(maxNum);
-			return ret;
-		}
-		return new MeshParticle2D(maxNum);
-	}
-
-	MeshParticle2D.const_stride=29*4;
-	MeshParticle2D._POOL=[];
-	__static(MeshParticle2D,
-	['_fixattriInfo',function(){return this._fixattriInfo=[
-		/*laya.webgl.WebGLContext.FLOAT*/0x1406,4,0,
-		/*laya.webgl.WebGLContext.FLOAT*/0x1406,3,16,
-		/*laya.webgl.WebGLContext.FLOAT*/0x1406,3,28,
-		/*laya.webgl.WebGLContext.FLOAT*/0x1406,4,40,
-		/*laya.webgl.WebGLContext.FLOAT*/0x1406,4,56,
-		/*laya.webgl.WebGLContext.FLOAT*/0x1406,3,72,
-		/*laya.webgl.WebGLContext.FLOAT*/0x1406,2,84,
-		/*laya.webgl.WebGLContext.FLOAT*/0x1406,4,92,
-		/*laya.webgl.WebGLContext.FLOAT*/0x1406,1,108,
-		/*laya.webgl.WebGLContext.FLOAT*/0x1406,1,112];}
-	]);
-	return MeshParticle2D;
-})(Mesh2D)
 
 
 //class laya.webgl.utils.Buffer2D extends laya.webgl.utils.Buffer
@@ -8073,20 +8294,23 @@ var Buffer2D=(function(_super){
 	*@return
 	*/
 	__proto._resizeBuffer=function(nsz,copy){
-		if (nsz < this._buffer.byteLength)
+		var buff=this._buffer;
+		if (nsz <=buff.byteLength)
 			return this;
-		if (copy && this._buffer && this._buffer.byteLength > 0){
+		var u8buf=this._u8Array;
+		if (copy && buff && buff.byteLength > 0){
 			var newbuffer=new ArrayBuffer(nsz);
-			var oldU8Arr=(this._u8Array && this._u8Array.buffer==this._buffer)?this._u8Array :new Uint8Array(this._buffer);
-			this._u8Array=new Uint8Array(newbuffer);
-			this._u8Array.set(oldU8Arr,0);
-			this._buffer=newbuffer;
+			var oldU8Arr=(u8buf && u8buf.buffer==buff)?u8buf :new Uint8Array(buff);
+			u8buf=this._u8Array=new Uint8Array(newbuffer);
+			u8buf.set(oldU8Arr,0);
+			buff=this._buffer=newbuffer;
 			}else{
-			this._buffer=new ArrayBuffer(nsz);
+			buff=this._buffer=new ArrayBuffer(nsz);
+			this._u8Array=null;
 		}
 		this._checkArrayUse();
 		this._upload=true;
-		this._bufferSize=this._buffer.byteLength;
+		this._bufferSize=buff.byteLength;
 		return this;
 	}
 
@@ -8109,12 +8333,23 @@ var Buffer2D=(function(_super){
 		this._checkArrayUse();
 	}
 
-	//TODO:coverage
+	/**
+	*附加Uint16Array的数据。数据长度是len。byte的话要*2
+	*@param data
+	*@param len
+	*/
 	__proto.appendU16Array=function(data,len){
 		this._resizeBuffer(this._byteLength+len*2,true);
 		var u=new Uint16Array(this._buffer,this._byteLength,len);
-		for (var i=0;i < len;i++){
-			u[i]=data[i];
+		if (len==6){
+			u[0]=data[0];u[1]=data[1];u[2]=data[2];
+			u[3]=data[3];u[4]=data[4];u[5]=data[5];
+			}else if(len>=100){
+			/*__JS__ */u.set(new Uint16Array(data.buffer,0,len));
+			}else{
+			for (var i=0;i < len;i++){
+				u[i]=data[i];
+			}
 		}
 		this._byteLength+=len *2;
 		this._checkArrayUse();
@@ -8266,7 +8501,7 @@ var SubmitTexture=(function(_super){
 			this.shaderValue.upload();
 		}
 		gl.drawElements(/*laya.webgl.WebGLContext.TRIANGLES*/0x0004,this._numEle,/*laya.webgl.WebGLContext.UNSIGNED_SHORT*/0x1403,this._startIdx);
-		Stat.renderBatch++;
+		Stat.renderBatches++;
 		Stat.trianglesFaces+=this._numEle / 3;
 		return 1;
 	}
@@ -8796,21 +9031,21 @@ var BaseTexture=(function(_super){
 		WebGLContext.bindTexture(gl,this._glTextureType,this._glTexture);
 		switch (value){
 			case 0:
-				if (this._mipmap && this._isPot(this._width)&& this._isPot(this._height))
+				if (this._mipmap)
 					gl.texParameteri(this._glTextureType,/*laya.webgl.WebGLContext.TEXTURE_MIN_FILTER*/0x2801,/*laya.webgl.WebGLContext.NEAREST_MIPMAP_NEAREST*/0x2700);
 				else
 				gl.texParameteri(this._glTextureType,/*laya.webgl.WebGLContext.TEXTURE_MIN_FILTER*/0x2801,/*laya.webgl.WebGLContext.NEAREST*/0x2600);
 				gl.texParameteri(this._glTextureType,/*laya.webgl.WebGLContext.TEXTURE_MAG_FILTER*/0x2800,/*laya.webgl.WebGLContext.NEAREST*/0x2600);
 				break ;
 			case 1:
-				if (this._mipmap && this._isPot(this._width)&& this._isPot(this._height))
+				if (this._mipmap)
 					gl.texParameteri(this._glTextureType,/*laya.webgl.WebGLContext.TEXTURE_MIN_FILTER*/0x2801,/*laya.webgl.WebGLContext.LINEAR_MIPMAP_NEAREST*/0x2701);
 				else
 				gl.texParameteri(this._glTextureType,/*laya.webgl.WebGLContext.TEXTURE_MIN_FILTER*/0x2801,/*laya.webgl.WebGLContext.LINEAR*/0x2601);
 				gl.texParameteri(this._glTextureType,/*laya.webgl.WebGLContext.TEXTURE_MAG_FILTER*/0x2800,/*laya.webgl.WebGLContext.LINEAR*/0x2601);
 				break ;
 			case 2:
-				if (this._mipmap && this._isPot(this._width)&& this._isPot(this._height))
+				if (this._mipmap)
 					gl.texParameteri(this._glTextureType,/*laya.webgl.WebGLContext.TEXTURE_MIN_FILTER*/0x2801,/*laya.webgl.WebGLContext.LINEAR_MIPMAP_LINEAR*/0x2703);
 				else
 				gl.texParameteri(this._glTextureType,/*laya.webgl.WebGLContext.TEXTURE_MIN_FILTER*/0x2801,/*laya.webgl.WebGLContext.LINEAR*/0x2601);
@@ -8874,6 +9109,14 @@ var BaseTexture=(function(_super){
 			return this._glTexture;
 		else
 		return null;
+	}
+
+	/**
+	*通过基础数据生成mipMap。
+	*/
+	__proto.generateMipmap=function(){
+		if (this._isPot(this.width)&& this._isPot(this.height))
+			LayaGL.instance.generateMipmap(this._glTextureType);
 	}
 
 	/**
@@ -9481,6 +9724,7 @@ var RenderTexture2D=(function(_super){
 		this._height=height;
 		this._depthStencilFormat=depthStencilFormat;
 		this._create(width,height);
+		this.lock=true;
 	}
 
 	__class(RenderTexture2D,'laya.webgl.resource.RenderTexture2D',_super);
@@ -9621,6 +9865,9 @@ var RenderTexture2D=(function(_super){
 	*@return 像素数据。
 	*/
 	__proto.getData=function(x,y,width,height){
+		if (Render.isConchApp && /*__JS__ */conchConfig.threadMode==2){
+			throw "native 2 thread mode use getDataAsync";
+		};
 		var gl=LayaGL.instance;
 		gl.bindFramebuffer(/*laya.webgl.WebGLContext.FRAMEBUFFER*/0x8D40,this._frameBuffer);
 		var canRead=(gl.checkFramebufferStatus(/*laya.webgl.WebGLContext.FRAMEBUFFER*/0x8D40)===/*laya.webgl.WebGLContext.FRAMEBUFFER_COMPLETE*/0x8CD5);
@@ -9633,6 +9880,18 @@ var RenderTexture2D=(function(_super){
 		gl.readPixels(x,y,width,height,glFormat,/*laya.webgl.WebGLContext.UNSIGNED_BYTE*/0x1401,pixels);
 		gl.bindFramebuffer(/*laya.webgl.WebGLContext.FRAMEBUFFER*/0x8D40,null);
 		return pixels;
+	}
+
+	/**
+	*native多线程
+	*/
+	__proto.getDataAsync=function(x,y,width,height,callBack){
+		var gl=LayaGL.instance;
+		gl.bindFramebuffer(/*laya.webgl.WebGLContext.FRAMEBUFFER*/0x8D40,this._frameBuffer);
+		gl.readPixelsAsync(x,y,width,height,/*laya.webgl.WebGLContext.RGBA*/0x1908,/*laya.webgl.WebGLContext.UNSIGNED_BYTE*/0x1401,function(data){
+			/*__JS__ */callBack(new Uint8Array(data));
+		});
+		gl.bindFramebuffer(/*laya.webgl.WebGLContext.FRAMEBUFFER*/0x8D40,null);
 	}
 
 	__proto.recycle=function(){}
@@ -9739,6 +9998,8 @@ var Texture2D=(function(_super){
 		//this._canRead=false;
 		/**@private */
 		//this._pixels=null;
+		/**@private */
+		//this._mipmapCount=0;
 		(width===void 0)&& (width=0);
 		(height===void 0)&& (height=0);
 		(format===void 0)&& (format=1);
@@ -9751,13 +10012,54 @@ var Texture2D=(function(_super){
 		this._canRead=canRead;
 		this._setWarpMode(/*laya.webgl.WebGLContext.TEXTURE_WRAP_S*/0x2802,this._wrapModeU);
 		this._setWarpMode(/*laya.webgl.WebGLContext.TEXTURE_WRAP_T*/0x2803,this._wrapModeV);
-		Config.is2DPixelArtGame && (this._filterMode=/*laya.webgl.resource.BaseTexture.FILTERMODE_POINT*/0);
 		this._setFilterMode(this._filterMode);
 		this._setAnisotropy(this._anisoLevel);
+		if (this._mipmap){
+			this._mipmapCount=/*__JS__ */Math.max(Math.ceil(Math.log2(width))+1,Math.ceil(Math.log2(2))+1);
+			for (var i=0;i < this._mipmapCount;i++)
+			this._setPixels(null,i,Math.max(width >> i,1),Math.max(height >> i,1));
+			this._setGPUMemory(width *height *4 *(1+1 / 3));
+			}else {
+			this._mipmapCount=1;
+			this._setGPUMemory(width *height *4);
+		}
 	}
 
 	__class(Texture2D,'laya.webgl.resource.Texture2D',_super);
 	var __proto=Texture2D.prototype;
+	/**
+	*@private
+	*/
+	__proto._getFormatByteCount=function(){
+		switch (this._format){
+			case 0:
+				return 3;
+			case 1:
+				return 4;
+			case 2:
+				return 1;
+			default :
+				throw "Texture2D: unknown format.";
+			}
+	}
+
+	/**
+	*@private
+	*/
+	__proto._setPixels=function(pixels,miplevel,width,height){
+		var gl=LayaGL.instance;
+		var textureType=this._glTextureType;
+		var glFormat=this._getGLFormat();
+		WebGLContext.bindTexture(gl,textureType,this._glTexture);
+		if (this.format===/*laya.webgl.resource.BaseTexture.FORMAT_R8G8B8*/0){
+			gl.pixelStorei(/*laya.webgl.WebGLContext.UNPACK_ALIGNMENT*/0x0CF5,1);
+			gl.texImage2D(textureType,miplevel,glFormat,width,height,0,glFormat,/*laya.webgl.WebGLContext.UNSIGNED_BYTE*/0x1401,pixels);
+			gl.pixelStorei(/*laya.webgl.WebGLContext.UNPACK_ALIGNMENT*/0x0CF5,4);
+			}else {
+			gl.texImage2D(textureType,miplevel,glFormat,width,height,0,glFormat,/*laya.webgl.WebGLContext.UNSIGNED_BYTE*/0x1401,pixels);
+		}
+	}
+
 	/**
 	*@private
 	*/
@@ -9942,6 +10244,8 @@ var Texture2D=(function(_super){
 		var height=source.height;
 		this._width=width;
 		this._height=height;
+		if (!(this._isPot(width)&& this._isPot(height)))
+			this._mipmap=false;
 		this._setWarpMode(/*laya.webgl.WebGLContext.TEXTURE_WRAP_S*/0x2802,this._wrapModeU);
 		this._setWarpMode(/*laya.webgl.WebGLContext.TEXTURE_WRAP_T*/0x2803,this._wrapModeV);
 		this._setFilterMode(this._filterMode);
@@ -9949,14 +10253,19 @@ var Texture2D=(function(_super){
 		WebGLContext.bindTexture(gl,this._glTextureType,this._glTexture);
 		var glFormat=this._getGLFormat();
 		if (Render.isConchApp){
-			source.setPremultiplyAlpha(premultiplyAlpha);
-			gl.texImage2D(this._glTextureType,0,/*laya.webgl.WebGLContext.RGBA*/0x1908,/*laya.webgl.WebGLContext.RGBA*/0x1908,/*laya.webgl.WebGLContext.UNSIGNED_BYTE*/0x1401,source);
+			if ((source instanceof laya.resource.HTMLCanvas )){
+				gl.texImage2D(this._glTextureType,0,/*laya.webgl.WebGLContext.RGBA*/0x1908,/*laya.webgl.WebGLContext.RGBA*/0x1908,/*laya.webgl.WebGLContext.UNSIGNED_BYTE*/0x1401,source);
+			}
+			else {
+				source.setPremultiplyAlpha(premultiplyAlpha);
+				gl.texImage2D(this._glTextureType,0,/*laya.webgl.WebGLContext.RGBA*/0x1908,/*laya.webgl.WebGLContext.RGBA*/0x1908,/*laya.webgl.WebGLContext.UNSIGNED_BYTE*/0x1401,source);
+			}
 			}else {
 			(premultiplyAlpha)&& (gl.pixelStorei(/*laya.webgl.WebGLContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL*/0x9241,true));
 			gl.texImage2D(this._glTextureType,0,glFormat,glFormat,/*laya.webgl.WebGLContext.UNSIGNED_BYTE*/0x1401,source);
 			(premultiplyAlpha)&& (gl.pixelStorei(/*laya.webgl.WebGLContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL*/0x9241,false));
 		}
-		if (this._mipmap && this._isPot(width)&& this._isPot(height)){
+		if (this._mipmap){
 			gl.generateMipmap(this._glTextureType);
 			this._setGPUMemory(width *height *4 *(1+1 / 3));
 			}else {
@@ -9985,21 +10294,42 @@ var Texture2D=(function(_super){
 		(miplevel===void 0)&& (miplevel=0);
 		if (!pixels)
 			throw "Texture2D:pixels can't be null.";
-		var width=this._width;
-		var height=this._height;
+		var width=Math.max(this._width >> miplevel,1);
+		var height=Math.max(this._height >> miplevel,1);
+		var pixelsCount=width *height *this._getFormatByteCount();
+		if (pixels.length < pixelsCount)
+			throw "Texture2D:pixels length should at least "+pixelsCount+".";
+		this._setPixels(pixels,miplevel,width,height);
+		if (this._canRead)
+			this._pixels=pixels;
+		this._readyed=true;
+		this._activeResource();
+	}
+
+	/**
+	*通过像素填充部分纹理。
+	*@param x X轴像素起点。
+	*@param y Y轴像素起点。
+	*@param width 像素宽度。
+	*@param height 像素高度。
+	*@param pixels 像素数组。
+	*@param miplevel 层级。
+	*/
+	__proto.setSubPixels=function(x,y,width,height,pixels,miplevel){
+		(miplevel===void 0)&& (miplevel=0);
+		if (!pixels)
+			throw "Texture2D:pixels can't be null.";
 		var gl=LayaGL.instance;
 		var textureType=this._glTextureType;
 		WebGLContext.bindTexture(gl,textureType,this._glTexture);
 		var glFormat=this._getGLFormat();
-		gl.texImage2D(textureType,miplevel,glFormat,width,height,0,glFormat,/*laya.webgl.WebGLContext.UNSIGNED_BYTE*/0x1401,pixels);
-		if (this._mipmap && this._isPot(width)&& this._isPot(height)){
-			gl.generateMipmap(textureType);
-			this._setGPUMemory(width *height *4 *(1+1 / 3));
+		if (this._format===/*laya.webgl.resource.BaseTexture.FORMAT_R8G8B8*/0){
+			gl.pixelStorei(/*laya.webgl.WebGLContext.UNPACK_ALIGNMENT*/0x0CF5,1);
+			gl.texSubImage2D(textureType,miplevel,x,y,width,height,glFormat,/*laya.webgl.WebGLContext.UNSIGNED_BYTE*/0x1401,pixels);
+			gl.pixelStorei(/*laya.webgl.WebGLContext.UNPACK_ALIGNMENT*/0x0CF5,4);
 			}else {
-			this._setGPUMemory(width *height *4);
+			gl.texSubImage2D(textureType,miplevel,x,y,width,height,glFormat,/*laya.webgl.WebGLContext.UNSIGNED_BYTE*/0x1401,pixels);
 		}
-		if (this._canRead)
-			this._pixels=pixels;
 		this._readyed=true;
 		this._activeResource();
 	}
@@ -10043,6 +10373,13 @@ var Texture2D=(function(_super){
 		else
 		throw new Error("Texture2D: must set texture canRead is true.");
 	}
+
+	/**
+	*获取mipmap数量。
+	*/
+	__getset(0,__proto,'mipmapCount',function(){
+		return this._mipmapCount;
+	});
 
 	/**
 	*@inheritDoc

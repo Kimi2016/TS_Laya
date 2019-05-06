@@ -896,15 +896,54 @@ var HTMLElement=(function(){
 					var lastIndex=words.length-1;
 					var lastWords=words[lastIndex];
 					var lineY=lastWords.y+lastWords.height;
-					if(cssStyle.textDecoration!="none")
-						graphic.drawLine(words[0].x,lineY,lastWords.x+lastWords.width,lineY,color,1);
-					var hitRec=HTMLHitRect.create();
-					hitRec.rec.setTo(words[0].x,lastWords.y,lastWords.x+lastWords.width-words[0].x,lastWords.height);
-					hitRec.href=this.href;
-					recList.push(hitRec);
+					if (lastWords.y==words[0].y){
+						if(cssStyle.textDecoration!="none")
+							graphic.drawLine(words[0].x,lineY,lastWords.x+lastWords.width,lineY,color,1);
+						var hitRec=HTMLHitRect.create();
+						hitRec.rec.setTo(words[0].x,lastWords.y,lastWords.x+lastWords.width-words[0].x,lastWords.height);
+						hitRec.href=this.href;
+						recList.push(hitRec);
+						}else{
+						this.workLines(words,graphic,recList);
+					}
 				}
 			}
 		}
+	}
+
+	__proto.workLines=function(wordList,g,recList){
+		var cssStyle=this.style;
+		var hasLine=false;
+		hasLine=cssStyle.textDecoration !="none";
+		var i=0,len=0;
+		len=wordList.length;
+		var tStartWord;
+		tStartWord=wordList[i];
+		var tEndWord;
+		tEndWord=tStartWord;
+		if (!tStartWord)return;
+		var tword;
+		for (i=1;i < len;i++){
+			tword=wordList[i];
+			if (tword.y !=tStartWord.y){
+				this.createOneLine(tStartWord,tEndWord,hasLine,g,recList);
+				tStartWord=tword;
+				tEndWord=tword;
+				}else{
+				tEndWord=tword;
+			}
+		}
+		this.createOneLine(tStartWord,tEndWord,hasLine,g,recList);
+	}
+
+	__proto.createOneLine=function(startWord,lastWords,hasLine,graphic,recList){
+		var lineY=lastWords.y+lastWords.height;
+		if(hasLine)
+			graphic.drawLine(startWord.x,lineY,lastWords.x+lastWords.width,lineY,this.color,1);
+		var hitRec=HTMLHitRect.create();
+		hitRec.rec.setTo(startWord.x,lastWords.y,lastWords.x+lastWords.width-startWord.x,lastWords.height);
+		hitRec.href=this.href;
+		recList.push(hitRec);
 	}
 
 	__getset(0,__proto,'href',function(){

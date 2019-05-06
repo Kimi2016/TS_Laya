@@ -274,7 +274,7 @@ var ___Laya=(function(){
 		}
 		CacheManger.beginCheck();
 		Laya._currentStage=Laya.stage=new Stage();
-		Laya._getUrlPath();
+		URL.rootPath=URL._basePath=Laya._getUrlPath();
 		Laya.render=new Render(0,0);
 		Laya.stage.size(width,height);
 		window.stage=Laya.stage;
@@ -290,7 +290,7 @@ var ___Laya=(function(){
 		var location=Browser.window.location;
 		var pathName=location.pathname;
 		pathName=pathName.charAt(2)==':' ? pathName.substring(1):pathName;
-		URL.rootPath=URL.basePath=URL.getPath(location.protocol=="file:" ? pathName :location.protocol+"//"+location.host+location.pathname);
+		return URL.getPath(location.protocol=="file:" ? pathName :location.protocol+"//"+location.host+location.pathname);
 	}
 
 	Laya._arrayBufferSlice=function(start,end){
@@ -327,7 +327,7 @@ var ___Laya=(function(){
 	Laya.lateTimer=null;
 	Laya.timer=null;
 	Laya.loader=null;
-	Laya.version="2.0.1beta";
+	Laya.version="2.0.2beta";
 	Laya.render=null;
 	Laya._currentStage=null;
 	Laya._isinit=false;
@@ -630,7 +630,7 @@ var DrawTextureCmd=(function(){
 		*（可选）颜色滤镜。
 		*/
 		//this.color=null;
-		//this.colorFlt=null;
+		this.colorFlt=null;
 		/**
 		*（可选）混合模式。
 		*/
@@ -1475,15 +1475,15 @@ var Const=(function(){
 var Graphics=(function(){
 	function Graphics(){
 		/**@private */
-		//this._sp=null;
+		this._sp=null;
 		/**@private */
 		this._one=null;
 		/**@private */
 		this._cmds=null;
 		/**@private */
-		//this._vectorgraphArray=null;
+		this._vectorgraphArray=null;
 		/**@private */
-		//this._graphicBounds=null;
+		this._graphicBounds=null;
 		/**@private */
 		this.autoDestroy=false;
 		this._render=this._renderEmpty;
@@ -2006,9 +2006,9 @@ var Graphics=(function(){
 	*@private
 	*/
 	__proto._renderAll=function(sprite,context,x,y){
-		var cmds=this._cmds,cmd;
+		var cmds=this._cmds;
 		for (var i=0,n=cmds.length;i < n;i++){
-			(cmd=cmds[i]).run(context,x,y);
+			cmds[i].run(context,x,y);
 		}
 	}
 
@@ -2184,6 +2184,24 @@ var Graphics=(function(){
 
 	/**
 	*@private
+	*绘制带九宫格的图片
+	*@param texture
+	*@param x
+	*@param y
+	*@param width
+	*@param height
+	*@param sizeGrid
+	*/
+	__proto.draw9Grid=function(texture,x,y,width,height,sizeGrid){
+		(x===void 0)&& (x=0);
+		(y===void 0)&& (y=0);
+		(width===void 0)&& (width=0);
+		(height===void 0)&& (height=0);
+		this._saveToCmd(null,Draw9GridTexture.create(texture,x,y,width,height,sizeGrid));
+	}
+
+	/**
+	*@private
 	*命令流。存储了所有绘制命令。
 	*/
 	__getset(0,__proto,'cmds',function(){
@@ -2199,6 +2217,73 @@ var Graphics=(function(){
 	});
 
 	return Graphics;
+})()
+
+
+/**
+*绘制带九宫格信息的图片
+*@private
+*/
+//class laya.display.cmd.Draw9GridTexture
+var Draw9GridTexture=(function(){
+	function Draw9GridTexture(){
+		/**
+		*纹理。
+		*/
+		//this.texture=null;
+		/**
+		*（可选）X轴偏移量。
+		*/
+		//this.x=NaN;
+		/**
+		*（可选）Y轴偏移量。
+		*/
+		//this.y=NaN;
+		/**
+		*（可选）宽度。
+		*/
+		//this.width=NaN;
+		/**
+		*（可选）高度。
+		*/
+		//this.height=NaN;
+		//this.sizeGrid=null;
+	}
+
+	__class(Draw9GridTexture,'laya.display.cmd.Draw9GridTexture');
+	var __proto=Draw9GridTexture.prototype;
+	/**
+	*回收到对象池
+	*/
+	__proto.recover=function(){
+		this.texture._removeReference();
+		Pool.recover("Draw9GridTexture",this);
+	}
+
+	/**@private */
+	__proto.run=function(context,gx,gy){
+		context.drawTextureWithSizeGrid(this.texture,this.x,this.y,this.width,this.height,this.sizeGrid,gx,gy);
+	}
+
+	/**@private */
+	__getset(0,__proto,'cmdID',function(){
+		return "Draw9GridTexture";
+	});
+
+	Draw9GridTexture.create=function(texture,x,y,width,height,sizeGrid){
+		var cmd=Pool.getItemByClass("Draw9GridTexture",Draw9GridTexture);
+		cmd.texture=texture;
+		texture._addReference();
+		cmd.x=x;
+		cmd.y=y;
+		cmd.width=width;
+		cmd.height=height;
+		cmd.sizeGrid=sizeGrid;
+		return cmd;
+	}
+
+	Draw9GridTexture.ID="Draw9GridTexture";
+	return Draw9GridTexture;
 })()
 
 
@@ -3525,6 +3610,8 @@ var Utils=(function(){
 
 	Utils.getQueryString=function(name){
 		if (Browser.onMiniGame)return null;
+		if(!window.location || !window.location.search)
+			return null;
 		var reg=new RegExp("(^|&)"+name+"=([^&]*)(&|$)");
 		var r=window.location.search.substr(1).match(reg);
 		if (r !=null)return unescape(r[2]);
@@ -4130,7 +4217,7 @@ var Browser=(function(){
 				libs[j].f(win,doc,Laya);
 			}
 		}
-		if (u.indexOf("MiniGame")>-1){
+		if (u.indexOf("MiniGame")>-1 && Browser.window.hasOwnProperty("wx")){
 			if (!Laya["MiniAdpter"]){
 				console.error("请先添加小游戏适配库,详细教程：https://ldc2.layabox.com/doc/?nav=zh-ts-5-0-0");
 				}else {
@@ -4142,6 +4229,20 @@ var Browser=(function(){
 				console.error("请先添加百度小游戏适配库,详细教程：https://ldc2.layabox.com/doc/?nav=zh-ts-5-0-0");
 				}else {
 				Laya["BMiniAdapter"].enable();
+			}
+		}
+		if((typeof /*__JS__ */getApp=='function')){
+			if (!Laya["KGMiniAdapter"]){
+				console.error("请先添加小米小游戏适配库,详细教程：https://ldc2.layabox.com/doc/?nav=zh-ts-5-0-0");
+				}else {
+				Laya["KGMiniAdapter"].enable();
+			}
+		}
+		if (u.indexOf("QGGame")>-1){
+			if (!Laya["QGMiniAdapter"]){
+				console.error("请先添加OPPO小游戏适配库");
+				}else {
+				Laya["QGMiniAdapter"].enable();
 			}
 		}
 		win.trace=console.log;
@@ -4169,7 +4270,7 @@ var Browser=(function(){
 			meta.name='viewport',meta.content=content;
 			doc.getElementsByTagName('head')[0].appendChild(meta);
 		}
-		Browser.onMobile=u.indexOf("Mobile")>-1;
+		Browser.onMobile=/*__JS__ */window.isConchApp ? true :u.indexOf("Mobile")>-1;
 		Browser.onIOS=!!u.match(/\(i[^;]+;(U;)? CPU.+Mac OS X/);
 		Browser.onIPhone=u.indexOf("iPhone")>-1;
 		Browser.onMac=/*[SAFE]*/ u.indexOf("Mac OS X")>-1;
@@ -4184,7 +4285,9 @@ var Browser=(function(){
 		Browser.onPC=!Browser.onMobile;
 		Browser.onMiniGame=/*[SAFE]*/ u.indexOf('MiniGame')>-1;
 		Browser.onBDMiniGame=/*[SAFE]*/ u.indexOf('SwanGame')>-1;
+		Browser.onQGMiniGame=/*[SAFE]*/ u.indexOf('QGGame')>-1;
 		Browser.onLimixiu=/*[SAFE]*/ u.indexOf('limixiu')>-1;
+		Browser.onKGMiniGame=/*[SAFE]*/ u.indexOf('QuickGame')>-1;
 		Browser.supportLocalStorage=LocalStorage.__init__();
 		Browser.supportWebAudio=SoundManager.__init__();
 		Render._mainCanvas=new HTMLCanvas(true);
@@ -4195,6 +4298,8 @@ var Browser=(function(){
 		Browser.canvas=new HTMLCanvas(true);
 		Browser.context=Browser.canvas.getContext('2d');
 		var tmpCanv=new HTMLCanvas(true);
+		if(laya.utils.Browser.onQGMiniGame)
+			tmpCanv=Render._mainCanvas;
 		var names=["webgl","experimental-webgl","webkit-3d","moz-webgl"];
 		var gl=null;
 		for (i=0;i < names.length;i++){
@@ -4243,6 +4348,8 @@ var Browser=(function(){
 	Browser.onPC=false;
 	Browser.onMiniGame=false;
 	Browser.onBDMiniGame=false;
+	Browser.onKGMiniGame=false;
+	Browser.onQGMiniGame=false;
 	Browser.onLimixiu=false;
 	Browser.onFirefox=false;
 	Browser.onEdge=false;
@@ -4830,11 +4937,13 @@ var WordText=(function(){
 		//上面的是个数组，但是可能前面都是空的，加个起始位置
 		this.startIDStroke=0;
 		this.lastGCCnt=0;
+		//如果文字gc了，需要检查缓存是否有效，这里记录上次检查对应的gc值。
+		this.splitRender=false;
 	}
 
 	__class(WordText,'laya.utils.WordText');
 	var __proto=WordText.prototype;
-	//如果文字gc了，需要检查缓存是否有效，这里记录上次检查对应的gc值。
+	// 强制拆分渲染
 	__proto.setText=function(txt){
 		this.changed=true;
 		this._text=txt;
@@ -6170,24 +6279,25 @@ var Stat=(function(){
 	Stat.show=function(x,y){
 		(x===void 0)&& (x=0);
 		(y===void 0)&& (y=0);
-		if (!Browser.onMiniGame && !Browser.onLimixiu && !Render.isConchApp)Stat._useCanvas=true;
+		if (!Browser.onMiniGame && !Browser.onLimixiu && !Render.isConchApp && !Browser.onBDMiniGame && !Browser.onKGMiniGame && !Browser.onQGMiniGame)Stat._useCanvas=true;
 		Stat._show=true;
 		Stat._fpsData.length=60;
 		Stat._view[0]={title:"FPS(Canvas)",value:"_fpsStr",color:"yellow",units:"int"};
 		Stat._view[1]={title:"Sprite",value:"_spriteStr",color:"white",units:"int"};
-		Stat._view[2]={title:"RenderBatch",value:"renderBatch",color:"white",units:"int"};
-		Stat._view[3]={title:"CPUMemory",value:"cpuMemory",color:"yellow",units:"M"};
-		Stat._view[4]={title:"GPUMemory",value:"gpuMemory",color:"yellow",units:"M"};
+		Stat._view[2]={title:"RenderBatches",value:"renderBatches",color:"white",units:"int"};
+		Stat._view[3]={title:"SavedRenderBatches",value:"savedRenderBatches",color:"white",units:"int"};
+		Stat._view[4]={title:"CPUMemory",value:"cpuMemory",color:"yellow",units:"M"};
+		Stat._view[5]={title:"GPUMemory",value:"gpuMemory",color:"yellow",units:"M"};
 		if (Render.isWebGL){
-			Stat._view[5]={title:"Shader",value:"shaderCall",color:"white",units:"int"};
+			Stat._view[6]={title:"Shader",value:"shaderCall",color:"white",units:"int"};
 			if (!Render.is3DMode){
 				Stat._view[0].title="FPS(WebGL)";
-				Stat._view[6]={title:"Canvas",value:"_canvasStr",color:"white",units:"int"};
+				Stat._view[7]={title:"Canvas",value:"_canvasStr",color:"white",units:"int"};
 				}else {
 				Stat._view[0].title="FPS(3D)";
-				Stat._view[6]={title:"TriFaces",value:"trianglesFaces",color:"white",units:"int"};
-				Stat._view[7]={title:"FrustumCulling",value:"frustumCulling",color:"white",units:"int"};
-				Stat._view[8]={title:"OctreeNodeCulling",value:"octreeNodeCulling",color:"white",units:"int"};
+				Stat._view[7]={title:"TriFaces",value:"trianglesFaces",color:"white",units:"int"};
+				Stat._view[8]={title:"FrustumCulling",value:"frustumCulling",color:"white",units:"int"};
+				Stat._view[9]={title:"OctreeNodeCulling",value:"octreeNodeCulling",color:"white",units:"int"};
 			}
 		}else {}
 		if (Stat._useCanvas){
@@ -6199,8 +6309,8 @@ var Stat=(function(){
 
 	Stat.createUIPre=function(x,y){
 		var pixel=Browser.pixelRatio;
-		Stat._width=pixel *170;
-		Stat._vx=pixel *110;
+		Stat._width=pixel *180;
+		Stat._vx=pixel *120;
 		Stat._height=pixel *(Stat._view.length *12+3 *pixel)+4;
 		Stat._fontSize=12 *pixel;
 		for (var i=0;i < Stat._view.length;i++){
@@ -6215,7 +6325,9 @@ var Stat=(function(){
 			Stat._ctx.font=Stat._fontSize+"px Arial";
 			Stat._canvas.source.style.cssText="pointer-events:none;background:rgba(150,150,150,0.8);z-index:100000;position: absolute;direction:ltr;left:"+x+"px;top:"+y+"px;width:"+(Stat._width / pixel)+"px;height:"+(Stat._height / pixel)+"px;";
 		}
-		Browser.container.appendChild(Stat._canvas.source);
+		if(!Browser.onKGMiniGame){
+			Browser.container.appendChild(Stat._canvas.source);
+		}
 		Stat._first=true;
 		Stat.loop();
 		Stat._first=false;
@@ -6268,7 +6380,7 @@ var Stat=(function(){
 	}
 
 	Stat.clear=function(){
-		Stat.trianglesFaces=Stat.renderBatch=Stat.shaderCall=Stat.spriteRenderUseCacheCount=Stat.frustumCulling=Stat.octreeNodeCulling=Stat.canvasNormal=Stat.canvasBitmap=Stat.canvasReCache=0;
+		Stat.trianglesFaces=Stat.renderBatches=Stat.savedRenderBatches=Stat.shaderCall=Stat.spriteRenderUseCacheCount=Stat.frustumCulling=Stat.octreeNodeCulling=Stat.canvasNormal=Stat.canvasBitmap=Stat.canvasReCache=0;
 	}
 
 	Stat.loop=function(){
@@ -6280,12 +6392,12 @@ var Stat=(function(){
 		if (Stat._show){
 			Stat.trianglesFaces=Math.round(Stat.trianglesFaces / count);
 			if (!Stat._useCanvas){
-				Stat.renderBatch=Math.round(Stat.renderBatch / count)-1;
-				Stat.shaderCall=Math.round(Stat.shaderCall / count);
+				Stat.renderBatches=Math.round(Stat.renderBatches / count)-1;
 				}else {
-				Stat.renderBatch=Math.round(Stat.renderBatch / count);
-				Stat.shaderCall=Math.round(Stat.shaderCall / count);
+				Stat.renderBatches=Math.round(Stat.renderBatches / count);
 			}
+			Stat.savedRenderBatches=Math.round(Stat.savedRenderBatches / count);
+			Stat.shaderCall=Math.round(Stat.shaderCall / count);
 			Stat.spriteRenderUseCacheCount=Math.round(Stat.spriteRenderUseCacheCount / count);
 			Stat.canvasNormal=Math.round(Stat.canvasNormal / count);
 			Stat.canvasBitmap=Math.round(Stat.canvasBitmap / count);
@@ -6347,7 +6459,8 @@ var Stat=(function(){
 	Stat.FPS=0;
 	Stat.loopCount=0;
 	Stat.shaderCall=0;
-	Stat.renderBatch=0;
+	Stat.renderBatches=0;
+	Stat.savedRenderBatches=0;
 	Stat.trianglesFaces=0;
 	Stat.spriteCount=0;
 	Stat.spriteRenderUseCacheCount=0;
@@ -7177,6 +7290,7 @@ var Config=(function(){
 	Config.webGL2D_MeshAllocMaxMem=true;
 	Config.is2DPixelArtGame=false;
 	Config.useWebGL2=false;
+	Config.useRetinalCanvas=false;
 	return Config;
 })()
 
@@ -7369,6 +7483,14 @@ var URL=(function(){
 		return this._url;
 	});
 
+	/**基础路径。如果不设置，默认为当前网页的路径。最终地址将被格式化为 basePath+相对URL地址，*/
+	__getset(1,URL,'basePath',function(){
+		return URL._basePath;
+		},function(value){
+		URL._basePath=Laya._getUrlPath();
+		URL._basePath=URL.formatURL(value);
+	});
+
 	URL.formatURL=function(url){
 		if (!url)return "null path";
 		if (url.indexOf(":")> 0)return url;
@@ -7376,7 +7498,7 @@ var URL=(function(){
 		if (url.indexOf(":")> 0)return url;
 		var char1=url.charAt(0);
 		if (char1==="."){
-			return URL._formatRelativePath(URL.basePath+url);
+			return URL._formatRelativePath(URL._basePath+url);
 			}else if (char1==='~'){
 			return URL.rootPath+url.substring(1);
 			}else if (char1==="d"){
@@ -7384,7 +7506,7 @@ var URL=(function(){
 			}else if (char1==="/"){
 			return url;
 		}
-		return URL.basePath+url;
+		return URL._basePath+url;
 	}
 
 	URL._formatRelativePath=function(value){
@@ -7422,7 +7544,7 @@ var URL=(function(){
 
 	URL.version={};
 	URL.exportSceneToJson=false;
-	URL.basePath="";
+	URL._basePath="";
 	URL.rootPath="";
 	URL.customFormat=function(url){
 		var newUrl=URL.version[url];
@@ -8414,13 +8536,17 @@ var RenderSprite=(function(){
 		if(tex._getSource())
 			context.drawTexture(tex,x-sprite.pivotX+tex.offsetX,y-sprite.pivotY+tex.offsetY,sprite._width || tex.width,sprite._height || tex.height);
 		var next=this._next;
-		next._fun.call(next,sprite,context,x,y);
+		if(next!=RenderSprite.NORENDER)
+			next._fun.call(next,sprite,context,x,y);
 	}
 
 	__proto._graphics=function(sprite,context,x,y){
-		sprite._graphics && sprite._graphics._render(sprite,context,x-sprite.pivotX,y-sprite.pivotY);
+		var style=sprite._style;
+		var g=sprite._graphics;
+		g && g._render(sprite,context,x-style.pivotX,y-style.pivotY);
 		var next=this._next;
-		next._fun.call(next,sprite,context,x,y);
+		if(next!=RenderSprite.NORENDER)
+			next._fun.call(next,sprite,context,x,y);
 	}
 
 	//TODO:coverage
@@ -8456,8 +8582,10 @@ var RenderSprite=(function(){
 			context.transform(transform.a,transform.b,transform.c,transform.d,transform.tx+x,transform.ty+y);
 			_next._fun.call(_next,sprite,context,0,0);
 			context.restore();
-		}else
-		_next._fun.call(_next,sprite,context,x,y);
+			}else {
+			if(_next!=RenderSprite.NORENDER)
+				_next._fun.call(_next,sprite,context,x,y);
+		}
 	}
 
 	__proto._children=function(sprite,context,x,y){
@@ -9207,7 +9335,9 @@ var Render=(function(){
 			Browser.document.body.appendChild(Render._mainCanvas.source);
 		}
 		else{
-			Browser.container.appendChild(Render._mainCanvas.source);
+			if(!Browser.onKGMiniGame){
+				Browser.container.appendChild(Render._mainCanvas.source);
+			}
 		}
 		RunDriver.initRender(Render._mainCanvas,width,height);
 		Browser.window.requestAnimationFrame(loop);
@@ -9339,20 +9469,20 @@ var Context=(function(){
 	var __proto=Context.prototype;
 	//TODO:coverage
 	__proto.drawCanvas=function(canvas,x,y,width,height){
-		Stat.renderBatch++;
+		Stat.renderBatches++;
 		this.drawImage(canvas._source,x,y,width,height);
 	}
 
 	//TODO:coverage
 	__proto._drawRect=function(x,y,width,height,style){
-		Stat.renderBatch++;
+		Stat.renderBatches++;
 		style && (this.fillStyle=style);
 		/*__JS__ */this.fillRect(x,y,width,height);
 	}
 
 	//TODO:coverage
 	__proto.drawText=function(text,x,y,font,color,textAlign){
-		Stat.renderBatch++;
+		Stat.renderBatches++;
 		if (arguments.length > 3 && font !=null){
 			this.font=font;
 			this.fillStyle=color;
@@ -9364,7 +9494,7 @@ var Context=(function(){
 
 	//TODO:coverage
 	__proto.fillBorderText=function(text,x,y,font,fillColor,borderColor,lineWidth,textAlign){
-		Stat.renderBatch++;
+		Stat.renderBatches++;
 		this.font=font;
 		this.fillStyle=fillColor;
 		this.textBaseline="top";
@@ -9404,7 +9534,7 @@ var Context=(function(){
 
 	//TODO:coverage
 	__proto.strokeWord=function(text,x,y,font,color,lineWidth,textAlign){
-		Stat.renderBatch++;
+		Stat.renderBatches++;
 		if (arguments.length > 3 && font !=null){
 			this.font=font;
 			/*__JS__ */this.strokeStyle=color;
@@ -9422,7 +9552,7 @@ var Context=(function(){
 
 	//TODO:coverage
 	__proto.clipRect=function(x,y,width,height){
-		Stat.renderBatch++;
+		Stat.renderBatches++;
 		this.beginPath();
 		this.rect(x,y,width,height);
 		this.clip();
@@ -9432,7 +9562,7 @@ var Context=(function(){
 	__proto.drawTextureWithTransform=function(tex,tx,ty,width,height,m,gx,gy,alpha,blendMode,colorfilter){
 		if (!tex._getSource())
 			return;
-		Stat.renderBatch++;
+		Stat.renderBatches++;
 		var alphaChanged=alpha!==1;
 		if (alphaChanged){
 			var temp=this.globalAlpha;
@@ -9456,9 +9586,48 @@ var Context=(function(){
 	}
 
 	//TODO:coverage
+	__proto.drawTextureWithSizeGrid=function(tex,tx,ty,width,height,sizeGrid,gx,gy){
+		if (!tex._getSource())
+			return;
+		Stat.renderBatches++;
+		tx+=gx;
+		ty+=gy;
+		var uv=tex.uv,w=tex.bitmap._width,h=tex.bitmap._height;
+		var top=sizeGrid[0];
+		var right=sizeGrid[1];
+		var bottom=sizeGrid[2];
+		var left=sizeGrid[3];
+		var repeat=sizeGrid[4];
+		var needClip=false;
+		if (width==w){
+			left=right=0;
+		}
+		if (height==h){
+			top=bottom=0;
+		}
+		if (left+right > width){
+			var clipWidth=width;
+			needClip=true;
+			width=left+right;
+			this.save();
+			this.clipRect(0+tx,0+ty,clipWidth,height);
+		}
+		left && top && this.drawRect(0+tx,0+ty,left,top,"#ff0000",null,0);
+		right && top && this.drawRect(width-right+tx,0+ty,right,top,"#ff0000",null,0);
+		left && bottom && this.drawRect(0+tx,height-bottom+ty,left,bottom,"#ff0000",null,0);
+		right && bottom && this.drawRect(width-right+tx,height-bottom+ty,right,bottom,"#ff0000",null,0);
+		top && this.drawRect(left+tx,0+ty,width-left-right,top,"#ffff00",null,0);
+		bottom && this.drawRect(left+tx,height-bottom+ty,width-left-right,bottom,"#ffff00",null,0);
+		left && this.drawRect(0+tx,top+ty,left,height-top-bottom,"#ffff00",null,0);
+		right && this.drawRect(width-right+tx,top+ty,right,height-top-bottom,"#ffff00",null,0);
+		this.drawRect(left+tx,top+ty,width-left-right,height-top-bottom,"#ff00ff",null,0);
+		if (needClip)this.restore();
+	}
+
+	//TODO:coverage
 	__proto.drawTexture2=function(x,y,pivotX,pivotY,m,args2){
 		var tex=args2[0];
-		Stat.renderBatch++;
+		Stat.renderBatches++;
 		var uv=tex.uv,w=tex.bitmap._width,h=tex.bitmap._height;
 		if (m){
 			this.save();
@@ -9603,13 +9772,13 @@ var Context=(function(){
 	__proto.drawTexture=function(tex,x,y,width,height){
 		var source=tex._getSource();
 		if (!source)return;
-		Stat.renderBatch++;
+		Stat.renderBatches++;
 		var uv=tex.uv,w=tex.bitmap.width,h=tex.bitmap.height;
 		this.drawImage(source,uv[0] *w,uv[1] *h,(uv[2]-uv[0])*w,(uv[5]-uv[3])*h,x,y,width,height);
 	}
 
 	__proto.drawTextures=function(tex,pos,tx,ty){
-		Stat.renderBatch+=pos.length / 2;
+		Stat.renderBatches+=pos.length / 2;
 		var w=tex.width;
 		var h=tex.height;
 		for (var i=0,sz=pos.length;i < sz;i+=2){
@@ -9705,7 +9874,7 @@ var Context=(function(){
 	}
 
 	__proto._drawCircle=function(x,y,radius,fillColor,lineColor,lineWidth,vid){
-		Stat.renderBatch++;
+		Stat.renderBatches++;
 		Render.isWebGL? /*__JS__ */this.beginPath(true):this.beginPath();
 		this.arc(x,y,radius,0,Context.PI2);
 		this.closePath();
@@ -9777,7 +9946,7 @@ var Context=(function(){
 		to=to || /*__JS__ */CanvasRenderingContext2D.prototype;
 		if(to.init2d)return;
 		to.init2d=true;
-		var funs=["saveTransform","restoreTransform","transformByMatrix","drawTriangles","drawTriangle",'drawTextures','fillWords','fillBorderWords','drawRect','strokeWord','drawText','fillTexture','setTransformByMatrix','clipRect','drawTexture','drawTexture2','drawTextureWithTransform','flush','clear','destroy','drawCanvas','fillBorderText','drawCurves',"_drawRect","alpha","_transform","_rotate","_scale","_drawLine","_drawLines","_drawCircle","_fillAndStroke","_drawPie","_drawPoly","_drawPath","drawTextureWithTransform"];
+		var funs=["saveTransform","restoreTransform","transformByMatrix","drawTriangles","drawTriangle",'drawTextures','fillWords','fillBorderWords','drawRect','strokeWord','drawText','fillTexture','setTransformByMatrix','clipRect','drawTexture','drawTexture2','drawTextureWithTransform',"drawTextureWithSizeGrid",'flush','clear','destroy','drawCanvas','fillBorderText','drawCurves',"_drawRect","alpha","_transform","_rotate","_scale","_drawLine","_drawLines","_drawCircle","_fillAndStroke","_drawPie","_drawPoly","_drawPath","drawTextureWithTransform"];
 		funs.forEach(function(i){
 			to[i]=from[i];
 		});
@@ -12764,21 +12933,21 @@ var DrawLinesCmd=(function(){
 var Resource=(function(_super){
 	function Resource(){
 		/**@private */
-		//this._id=0;
+		this._id=0;
 		/**@private */
-		//this._url=null;
+		this._url=null;
 		/**@private */
 		this._cpuMemory=0;
 		/**@private */
 		this._gpuMemory=0;
 		/**@private */
-		//this._destroyed=false;
+		this._destroyed=false;
 		/**@private */
-		//this._referenceCount=0;
+		this._referenceCount=0;
 		/**是否加锁，如果true为不能使用自动释放机制。*/
-		//this.lock=false;
+		this.lock=false;
 		/**名称。 */
-		//this.name=null;
+		this.name=null;
 		Resource.__super.call(this);
 		this._id=++Resource._uniqueIDCounter;
 		this._destroyed=false;
@@ -13606,7 +13775,7 @@ var Node=(function(_super){
 			for (var i=0,n=this._components.length;i < n;i++){
 				var comp=this._components[i];
 				comp._setActive(true);
-				(comp._isScript())&& (activeChangeScripts.push(comp));
+				(comp._isScript()&& comp._enabled)&& (activeChangeScripts.push(comp));
 			}
 		}
 		this._onActive();
@@ -13648,7 +13817,7 @@ var Node=(function(_super){
 			for (var i=0,n=this._components.length;i < n;i++){
 				var comp=this._components[i];
 				comp._setActive(false);
-				(comp._isScript())&& (activeChangeScripts.push(comp));
+				(comp._isScript()&& comp._enabled)&& (activeChangeScripts.push(comp));
 			}
 		}
 		this._setBit(/*laya.Const.ACTIVE_INHIERARCHY*/0x02,false);
@@ -13707,7 +13876,7 @@ var Node=(function(_super){
 		comp._onAdded();
 		if (this.activeInHierarchy){
 			comp._setActive(true);
-			(comp._isScript())&& ((comp).onEnable());
+			(comp._isScript()&& comp._enabled)&& ((comp).onEnable());
 		}
 		this._scene && comp._setActiveInScene(true);
 	}
@@ -14454,6 +14623,7 @@ var LoaderManager=(function(_super){
 		(priority===void 0)&& (priority=1);
 		(cache===void 0)&& (cache=true);
 		if ((url instanceof Array)){
+			var allScuess=true;
 			var items=url;
 			var itemCount=items.length;
 			var loadedCount=0;
@@ -14475,8 +14645,9 @@ var LoaderManager=(function(_super){
 			function onComplete (item,content){
 				loadedCount++;
 				item.progress=1;
+				content || (allScuess=false);
 				if (loadedCount===itemCount && complete){
-					complete.run();
+					complete.runWith(allScuess);
 				}
 			}
 			function onProgress (item,value){
@@ -15454,7 +15625,11 @@ var SoundChannel=(function(_super){
 	/**
 	*停止播放。
 	*/
-	__proto.stop=function(){}
+	__proto.stop=function(){
+		if (this.completeHandler)this.completeHandler.run();
+		this.completeHandler=null;
+	}
+
 	/**
 	*暂停播放。
 	*/
@@ -15521,7 +15696,7 @@ var Texture=(function(_super){
 		/**@private [NATIVE]*/
 		//this._nativeObj=null;
 		/**@private 唯一ID*/
-		//this.$_GID=NaN;
+		this.$_GID=0;
 		/**沿 X 轴偏移量。*/
 		this.offsetX=0;
 		/**沿 Y 轴偏移量。*/
@@ -15531,7 +15706,7 @@ var Texture=(function(_super){
 		/**原始高度（包括被裁剪的透明区域）。*/
 		this.sourceHeight=0;
 		/**图片地址*/
-		//this.url=null;
+		this.url=null;
 		/**@private */
 		this.scaleRate=1;
 		Texture.__super.call(this);
@@ -15658,8 +15833,8 @@ var Texture=(function(_super){
 		var _$this=this;
 		var url=this._bitmap.url;
 		if (!this._destroyed && (!this._bitmap || this._bitmap.destroyed)&& url){
-			Laya.loader.load(url,Handler.create(this,function(bitmap){
-				_$this._bitmap=bitmap;
+			Laya.loader.load(url,Handler.create(this,function(bit){
+				_$this.bitmap=bit;
 			}),null,"htmlimage",1,false,null,true);
 		}
 	}
@@ -15680,11 +15855,12 @@ var Texture=(function(_super){
 		(force===void 0)&& (force=false);
 		if (!this._destroyed){
 			this._destroyed=true;
-			if (this.bitmap){
-				this.bitmap._removeReference(this._referenceCount);
-				if (this.bitmap.referenceCount===0&&force)
-					this.bitmap.destroy();
-				this.bitmap=null;
+			var bit=this._bitmap;
+			if (bit){
+				bit._removeReference(this._referenceCount);
+				if (bit.referenceCount===0||force)
+					bit.destroy();
+				bit=null;
 			}
 			if (this.url && this===Laya.loader.getRes(this.url))
 				Laya.loader.clearRes(this.url);
@@ -15795,7 +15971,7 @@ var Texture=(function(_super){
 		var u1=tex.uv[0],v1=tex.uv[1],u2=tex.uv[4],v2=tex.uv[5];
 		var inAltasUVWidth=(u2-u1),inAltasUVHeight=(v2-v1);
 		var oriUV=Texture.moveUV(uv[0],uv[1],[x,y,x+width,y,x+width,y+height,x,y+height]);
-		tex.uv=[u1+oriUV[0] *inAltasUVWidth,v1+oriUV[1] *inAltasUVHeight,u2-(1-oriUV[2])*inAltasUVWidth,v1+oriUV[3] *inAltasUVHeight,u2-(1-oriUV[4])*inAltasUVWidth,v2-(1-oriUV[5])*inAltasUVHeight,u1+oriUV[6] *inAltasUVWidth,v2-(1-oriUV[7])*inAltasUVHeight];
+		tex.uv=new Float32Array([u1+oriUV[0] *inAltasUVWidth,v1+oriUV[1] *inAltasUVHeight,u2-(1-oriUV[2])*inAltasUVWidth,v1+oriUV[3] *inAltasUVHeight,u2-(1-oriUV[4])*inAltasUVWidth,v2-(1-oriUV[5])*inAltasUVHeight,u1+oriUV[6] *inAltasUVWidth,v2-(1-oriUV[7])*inAltasUVHeight]);
 		var bitmapScale=bitmap.scaleRate;
 		if (bitmapScale && bitmapScale !=1){
 			tex.sourceWidth /=bitmapScale;
@@ -15826,9 +16002,9 @@ var Texture=(function(_super){
 		return tex;
 	}
 
-	Texture.DEF_UV=[0,0,1.0,0,1.0,1.0,0,1.0];
-	Texture.NO_UV=[0,0,0,0,0,0,0,0];
-	Texture.INV_UV=[0,1,1.0,1,1.0,0.0,0,0.0];
+	Texture.DEF_UV=new Float32Array([0,0,1.0,0,1.0,1.0,0,1.0]);
+	Texture.NO_UV=new Float32Array([0,0,0,0,0,0,0,0]);
+	Texture.INV_UV=new Float32Array([0,1,1.0,1,1.0,0.0,0,0.0]);
 	Texture._rect1=new Rectangle();
 	Texture._rect2=new Rectangle();
 	return Texture;
@@ -16050,6 +16226,9 @@ var Loader=(function(_super){
 			case "font":
 				contentType="xml";
 				break ;
+			case "plfb":
+				contentType="arraybuffer";
+				break ;
 			default :
 				contentType=type;
 			}
@@ -16195,6 +16374,10 @@ var Loader=(function(_super){
 	*/
 	__proto.onLoaded=function(data){
 		var type=this._type;
+		if (type=="plfb"){
+			this.parsePLFBData(data);
+			this.complete(data);
+		}else
 		if (type=="plf"){
 			this.parsePLFData(data);
 			this.complete(data);
@@ -16319,6 +16502,26 @@ var Loader=(function(_super){
 					}
 				}
 		}
+	}
+
+	__proto.parsePLFBData=function(plfData){
+		var byte;
+		byte=new Byte(plfData);
+		var i=0,len=0;
+		len=byte.getInt32();
+		for (i=0;i < len;i++){
+			this.parseOnePLFBFile(byte);
+		}
+	}
+
+	__proto.parseOnePLFBFile=function(byte){
+		var fileLen=0;
+		var fileName;
+		var fileData;
+		fileName=byte.getUTFString();
+		fileLen=byte.getInt32();
+		fileData=byte.readArrayBuffer(fileLen);
+		Loader.preLoadedMap[URL.formatURL(fileName)]=fileData;
 	}
 
 	/**
@@ -16464,6 +16667,7 @@ var Loader=(function(_super){
 	Loader.FONT="font";
 	Loader.TTF="ttf";
 	Loader.PLF="plf";
+	Loader.PLFB="plfb";
 	Loader.HIERARCHY="HIERARCHY";
 	Loader.MESH="MESH";
 	Loader.MATERIAL="MATERIAL";
@@ -16473,7 +16677,7 @@ var Loader=(function(_super){
 	Loader.AVATAR="AVATAR";
 	Loader.TERRAINHEIGHTDATA="TERRAINHEIGHTDATA";
 	Loader.TERRAINRES="TERRAIN";
-	Loader.typeMap={"ttf":"ttf","png":"image","jpg":"image","jpeg":"image","ktx":"image","pvr":"image","txt":"text","json":"json","prefab":"prefab","xml":"xml","als":"atlas","atlas":"atlas","mp3":"sound","ogg":"sound","wav":"sound","part":"json","fnt":"font","plf":"plf","scene":"json","ani":"json","sk":"arraybuffer"};
+	Loader.typeMap={"ttf":"ttf","png":"image","jpg":"image","jpeg":"image","ktx":"image","pvr":"image","txt":"text","json":"json","prefab":"prefab","xml":"xml","als":"atlas","atlas":"atlas","mp3":"sound","ogg":"sound","wav":"sound","part":"json","fnt":"font","plf":"plf","plfb":"plfb","scene":"json","ani":"json","sk":"arraybuffer"};
 	Loader.parserMap={};
 	Loader.maxTimeOut=100;
 	Loader.groupMap={};
@@ -18028,7 +18232,7 @@ var Sprite=(function(_super){
 			pList=Utils.clearArray(this._boundStyle.temBM);
 			if (this._texture){
 				rec=Rectangle.TEMP;
-				rec.setTo(0,0,this._texture.width,this._texture.height);
+				rec.setTo(0,0,this.width||this._texture.width,this.height||this._texture.height);
 				Utils.concatArray(pList,rec._getBoundPoints());
 			}
 		};
@@ -18111,11 +18315,14 @@ var Sprite=(function(_super){
 		this._tfChanged=false;
 		var style=this._style;
 		var sx=style.scaleX,sy=style.scaleY;
+		var sskx=style.skewX;
+		var ssky=style.skewY;
+		var rot=style.rotation;
 		var m=this._transform || (this._transform=this._createTransform());
-		if (style.rotation || sx!==1 || sy!==1 || style.skewX!==0 || style.skewY!==0){
+		if (rot || sx!==1 || sy!==1 || sskx!==0 || ssky!==0){
 			m._bTransform=true;
-			var skx=(style.rotation-style.skewX)*0.0174532922222222;
-			var sky=(style.rotation+style.skewY)*0.0174532922222222;
+			var skx=(rot-sskx)*0.0174532922222222;
+			var sky=(rot+ssky)*0.0174532922222222;
 			var cx=Math.cos(sky);
 			var ssx=Math.sin(sky);
 			var cy=Math.sin(skx);
@@ -18297,7 +18504,7 @@ var Sprite=(function(_super){
 	*<p>也可以获取原始图片数据，分享到网上，从而实现截图效果，示例：</p>
 	*
 	*var htmlCanvas:HTMLCanvas=sprite.drawToCanvas(100,100,0,0);//把精灵绘制到canvas上面
-	*htmlCanvas.toBase64("image/png",0.9,callBack);//打印图片base64信息，可以发给服务器或者保存为图片
+	*htmlCanvas.toBase64("image/png",0.9);//打印图片base64信息，可以发给服务器或者保存为图片
 	*
 	*@param canvasWidth 画布宽度。
 	*@param canvasHeight 画布高度。
@@ -19247,6 +19454,7 @@ var AudioSoundChannel=(function(_super){
 	*
 	*/
 	__proto.stop=function(){
+		_super.prototype.stop.call(this);
 		this.isStopped=true;
 		SoundManager.removeChannel(this);
 		this.completeHandler=null;
@@ -19454,6 +19662,7 @@ var WebAudioSoundChannel=(function(_super){
 	*停止播放
 	*/
 	__proto.stop=function(){
+		_super.prototype.stop.call(this);
 		this._clearBufferSource();
 		this.audioBuffer=null;
 		if (this.gain)
@@ -19509,10 +19718,10 @@ var WebAudioSoundChannel=(function(_super){
 	__getset(0,__proto,'volume',function(){
 		return this._volume;
 		},function(v){
+		this._volume=v;
 		if (this.isStopped){
 			return;
 		}
-		this._volume=v;
 		if (this.gain.gain.setTargetAtTime){
 			this.gain.gain.setTargetAtTime(v,this.context.currentTime,0.001);
 		}else
@@ -19565,6 +19774,8 @@ var HTMLCanvas=(function(_super){
 	*销毁。
 	*/
 	__proto.destroy=function(){
+		laya.resource.Resource.prototype.destroy.call(this);
+		this._setCPUMemory(0);
 		this._ctx && this._ctx.destroy();
 		this._ctx=null;
 	}
@@ -19606,7 +19817,7 @@ var HTMLCanvas=(function(_super){
 		if (this._width !=w || this._height !=h || (this._source && (this._source.width !=w || this._source.height !=h))){
 			this._width=w;
 			this._height=h;
-			this._setGPUMemory(w *h *4);
+			this._setCPUMemory(w *h *4);
 			this._ctx && this._ctx.size && this._ctx.size(w,h);
 			this._source && (this._source.height=h,this._source.width=w);
 			if (this._texture){
@@ -19630,23 +19841,33 @@ var HTMLCanvas=(function(_super){
 	*把图片转换为base64信息
 	*@param type "image/png"
 	*@param encoderOptions 质量参数，取值范围为0-1
-	*@param callBack 完成回调，返回base64数据
 	*/
-	__proto.toBase64=function(type,encoderOptions,callBack){
+	__proto.toBase64=function(type,encoderOptions){
 		if (this._source){
 			if (Render.isConchApp){
+				if (/*__JS__ */conchConfig.threadMode==2){
+					throw "native 2 thread mode use toBase64Async";
+				};
 				var width=this._ctx._targets.sourceWidth;
 				var height=this._ctx._targets.sourceHeight;
-				this._ctx._targets.getData(0,0,width,height,function(data){
-					/*__JS__ */var base64=conchToBase64(type,encoderOptions,data,width,height);
-					/*__JS__ */callBack(base64);
-				});
+				var data=this._ctx._targets.getData(0,0,width,height);
+				/*__JS__ */return conchToBase64(type,encoderOptions,data.buffer,width,height);
 			}
 			else {
-				var base64Data=this._source.toDataURL(type,encoderOptions);
-				callBack(base64Data);
+				return this._source.toDataURL(type,encoderOptions);
 			}
 		}
+		return null;
+	}
+
+	//native多线程
+	__proto.toBase64Async=function(type,encoderOptions,callBack){
+		var width=this._ctx._targets.sourceWidth;
+		var height=this._ctx._targets.sourceHeight;
+		this._ctx._targets.getDataAsync(0,0,width,height,function(data){
+			/*__JS__ */var base64=conchToBase64(type,encoderOptions,data.buffer,width,height);
+			/*__JS__ */callBack(base64);
+		});
 	}
 
 	/**
@@ -19789,6 +20010,8 @@ var Text=(function(_super){
 		this._valign="top";
 		/**@private */
 		this._color="#000000";
+		/**@private */
+		this._singleCharRender=false;
 		Text.__super.call(this);
 		this._fontSize=Text.defaultFontSize;
 		this._font=Text.defaultFont;
@@ -20002,6 +20225,7 @@ var Text=(function(_super){
 					this._words || (this._words=[]);
 					_word=this._words.length > (i-beginLine)? this._words[i-beginLine] :new WordText();
 					_word.setText(word);
+					(_word).splitRender=this._singleCharRender;
 					}else {
 					_word=word;
 				}
@@ -20458,6 +20682,13 @@ var Text=(function(_super){
 		this.isChanged=true;
 	});
 
+	/**设置是否单个字符渲染，如果Textd的内容一直改变，例如是一个增加的数字，就设置这个，防止无效占用缓存 */
+	__getset(0,__proto,'singleCharRender',function(){
+		return this._singleCharRender;
+		},function(value){
+		this._singleCharRender=value;
+	});
+
 	/**
 	*垂直行间距（以像素为单位）。
 	*/
@@ -20637,6 +20868,54 @@ var Text=(function(_super){
 
 /**
 *@private
+*<p> <code>HTMLImage</code> 用于创建 HTML Image 元素。</p>
+*<p>请使用 <code>HTMLImage.create()<code>获取新实例，不要直接使用 <code>new HTMLImage<code> 。</p>
+*/
+//class laya.resource.HTMLImage extends laya.resource.Bitmap
+var HTMLImage=(function(_super){
+	function HTMLImage(){
+		/**@private */
+		//this._source=null;
+		HTMLImage.__super.call(this);
+	}
+
+	__class(HTMLImage,'laya.resource.HTMLImage',_super);
+	var __proto=HTMLImage.prototype;
+	/**
+	*通过图片源填充纹理,可为HTMLImageElement、HTMLCanvasElement、HTMLVideoElement、ImageBitmap、ImageData。
+	*/
+	__proto.loadImageSource=function(source){
+		var width=source.width;
+		var height=source.height;
+		if (width <=0 || height <=0)
+			throw new Error("HTMLImage:width or height must large than 0.");
+		this._width=width;
+		this._height=height;
+		this._source=source;
+		this._setGPUMemory(width *height *4);
+		this._activeResource();
+	}
+
+	//TODO:coverage
+	__proto._disposeResource=function(){
+		(this._source)&& (this._source=null,this._setGPUMemory(0));
+	}
+
+	//TODO:coverage
+	__proto._getSource=function(){
+		return this._source;
+	}
+
+	HTMLImage.create=function(width,height,format){
+		return new HTMLImage();
+	}
+
+	return HTMLImage;
+})(Bitmap)
+
+
+/**
+*@private
 */
 //class laya.media.SoundNode extends laya.display.Sprite
 var SoundNode=(function(_super){
@@ -20756,54 +21035,6 @@ var SoundNode=(function(_super){
 
 	return SoundNode;
 })(Sprite)
-
-
-/**
-*@private
-*<p> <code>HTMLImage</code> 用于创建 HTML Image 元素。</p>
-*<p>请使用 <code>HTMLImage.create()<code>获取新实例，不要直接使用 <code>new HTMLImage<code> 。</p>
-*/
-//class laya.resource.HTMLImage extends laya.resource.Bitmap
-var HTMLImage=(function(_super){
-	function HTMLImage(){
-		/**@private */
-		//this._source=null;
-		HTMLImage.__super.call(this);
-	}
-
-	__class(HTMLImage,'laya.resource.HTMLImage',_super);
-	var __proto=HTMLImage.prototype;
-	/**
-	*通过图片源填充纹理,可为HTMLImageElement、HTMLCanvasElement、HTMLVideoElement、ImageBitmap、ImageData。
-	*/
-	__proto.loadImageSource=function(source){
-		var width=source.width;
-		var height=source.height;
-		if (width <=0 || height <=0)
-			throw new Error("HTMLImage:width or height must large than 0.");
-		this._width=width;
-		this._height=height;
-		this._source=source;
-		this._setGPUMemory(width *height *4);
-		this._activeResource();
-	}
-
-	//TODO:coverage
-	__proto._disposeResource=function(){
-		(this._source)&& (this._source=null,this._setGPUMemory(0));
-	}
-
-	//TODO:coverage
-	__proto._getSource=function(){
-		return this._source;
-	}
-
-	HTMLImage.create=function(width,height,format){
-		return new HTMLImage();
-	}
-
-	return HTMLImage;
-})(Bitmap)
 
 
 /**
@@ -21119,6 +21350,8 @@ var Stage=(function(_super){
 		this._globalRepaintGet=false;
 		/**@private */
 		this._curUIBase=null;
+		/**使用物理分辨率作为canvas大小，会改进渲染效果，但是会降低性能*/
+		this.useRetinalCanvas=false;
 		Stage.__super.call(this);
 		this.offset=new Point();
 		this._canvasTransform=new Matrix();
@@ -21133,6 +21366,7 @@ var Stage=(function(_super){
 		this._setBit(/*laya.Const.ACTIVE_INHIERARCHY*/0x02,true);
 		this._isFocused=true;
 		this._isVisibility=true;
+		this.useRetinalCanvas=Config.useRetinalCanvas;
 		var window=Browser.window;
 		var _me=this;
 		window.addEventListener("focus",function(){
@@ -21234,8 +21468,8 @@ var Stage=(function(_super){
 		var scaleMode=this._scaleMode;
 		var scaleX=screenWidth / this.designWidth;
 		var scaleY=screenHeight / this.designHeight;
-		var canvasWidth=this.designWidth;
-		var canvasHeight=this.designHeight;
+		var canvasWidth=this.useRetinalCanvas?screenWidth:this.designWidth;
+		var canvasHeight=this.useRetinalCanvas?screenHeight:this.designHeight;
 		var realWidth=screenWidth;
 		var realHeight=screenHeight;
 		var pixelRatio=Browser.pixelRatio;
@@ -21280,6 +21514,10 @@ var Stage=(function(_super){
 				}
 				break ;
 			}
+		if (this.useRetinalCanvas){
+			canvasWidth=screenWidth;
+			canvasHeight=screenHeight;
+		}
 		scaleX *=this.scaleX;
 		scaleY *=this.scaleY;
 		if (scaleX===1 && scaleY===1){
