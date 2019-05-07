@@ -80,7 +80,7 @@ class AppMain {
 
     onConfigLoaded(): void {
         //加载IDE指定的场景
-        //GameConfig.startScene && Laya.Scene.open(GameConfig.startScene);
+        GameConfig.startScene && Laya.Scene.open(GameConfig.startScene);
 
         this.setup();
     }

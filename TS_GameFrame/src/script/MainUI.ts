@@ -39,13 +39,13 @@ export default class MainUI extends ui.MainSceneUI {
         //    platform: 9007199254740991,             ///平台
         //    istest: 0,///    0、正常，1、测试，不需要验证版本
         //}
-        //var mapName = PBName.getMap()
         //var root = Laya.Browser.window["PBMessage"];
-        //var buffer: any = root[mapName[210]].encode(msg).finish();
+        //var pbMessageName = GameMessageName.getMap()
+        //var buffer: any = root[pbMessageName[GameMessage.GM_VERIFY_VERSION]].encode(msg).finish();
         //console.log(buffer);
-         
-        NetworkManager.getInstance().createClient(0, "ws://192.168.2.126:50000");
+        //
 
+        NetworkManager.getInstance().createClient(0, "ws://192.168.2.126:50000");
         //定时执行一次(间隔时间)
         Laya.timer.once(2000, this, this.testNetwork);
     }

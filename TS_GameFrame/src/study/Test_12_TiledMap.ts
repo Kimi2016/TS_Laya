@@ -44,7 +44,7 @@ export default class Test_12_TiledMap {
         //设置缩放中心点为视口的左上角
         this.tMap.setViewPortPivotByScale(0, 0);
         //将原地图放大3倍
-        this.tMap.scale = 3;
+        this.tMap.scale = 5;
         Laya.stage.on(Laya.Event.RESIZE, this, this.resize);
         Laya.stage.on(Laya.Event.MOUSE_DOWN, this, this.mouseDown);
         Laya.stage.on(Laya.Event.MOUSE_UP, this, this.mouseUp);
