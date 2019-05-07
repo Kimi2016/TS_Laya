@@ -14,6 +14,7 @@ loadLib("libs/laya.filter.js")
 loadLib("libs/laya.tiledmap.js")
 loadLib("libs/laya.ui.js")
 loadLib("libs/laya.physics.js")
+loadLib("libs/qrcode.js")
 //-----libs-end-------
 loadLib("js/bundle.js");
 loadLib("protobuf/library/protobuf-library.js");
