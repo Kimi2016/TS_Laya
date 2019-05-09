@@ -3,6 +3,7 @@ export default class Test_13_DomElement {
         this.testDomElement();
         this.testQrcode();
         this.testVideo();
+        this.testCamera();
     }
 
     //SVG
@@ -66,6 +67,54 @@ export default class Test_13_DomElement {
             });
         }
         plyr.setup(video);
+    }
+
+    //摄像头
+    private video: Laya.Video = null
+    private testCamera(): void {
+        if (Laya.Media.supported() === false) {
+            alert("当前浏览器不支持");
+        }
+        else {
+            this.showMessage();
+            var options: any = {
+                audio: true,
+                video: {
+                    facingMode: { exact: "environment" },    // 后置摄像头，默认值就是，不设至也可以。
+                    width: Laya.stage.width,
+                    height: Laya.stage.height
+                }
+            };
+            Laya.Media.getMedia(options, Laya.Handler.create(this, this.onSuccess), Laya.Handler.create(this, this.onError));
+        }
+    }
+    private showMessage(): void {
+        var tex: Laya.Text = new Laya.Text();
+        Laya.stage.addChild(tex);
+        tex.text = "单击舞台播放和暂停";
+        tex.color = "#ffffff";
+        tex.fontSize = 100;
+        tex.valign = "middle";
+        tex.align = "center";
+        tex.size(Laya.stage.width, Laya.stage.height);
+    }
+    private onSuccess(url: string): void {
+        this.video = new Laya.Video(Laya.stage.width, Laya.stage.height);
+        this.video.load(url);
+        Laya.stage.addChild(this.video);
+        Laya.stage.on("click", this, this.onStageClick);
+    }
+    private onError(error: Error): void {
+        alert(error.message);
+    }
+    private onStageClick(): void {
+        //切换播放和暂停
+        if (!this.video.paused) {
+            this.video.pause();
+        }
+        else {
+            this.video.play();
+        }
     }
 
 }

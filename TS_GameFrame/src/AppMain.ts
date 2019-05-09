@@ -25,6 +25,7 @@ import Test_0_Network_ProtocolBuffer from './study/Test_0_Network_ProtocolBuffer
 import NetworkManager from './Framework/Network/NetworkManager';
 import Test_12_TiledMap from './study/Test_12_TiledMap';
 import Test_13_DomElement from './study/Test_13_DomElement';
+import Test_14_Shader from './study/Test_14_Shader';
 
 //启动类
 class AppMain {
@@ -81,7 +82,7 @@ class AppMain {
 
     onConfigLoaded(): void {
         //加载IDE指定的场景
-        //GameConfig.startScene && Laya.Scene.open(GameConfig.startScene);
+        GameConfig.startScene && Laya.Scene.open(GameConfig.startScene);
 
         this.setup();
     }
@@ -106,7 +107,8 @@ class AppMain {
         //new Test_0_1_Socket();
         //new Test_0_Network_ProtocolBuffer();
         new Test_12_TiledMap();
-        new Test_13_DomElement();
+        //new Test_13_DomElement();
+        //new Test_14_Shader();
     }
 }
 
