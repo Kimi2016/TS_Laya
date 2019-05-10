@@ -131,7 +131,7 @@ export default class SocketConnect {
         var netPacket: NetPacket = new NetPacket(this)
         netPacket.receiveMsg(msg)
         this.socket.input.clear()
-        NetEventDispatcher.getInstance().dispatchMessage(netPacket.messageId, netPacket)
+        NetEventDispatcher.getInstance().dispatch(netPacket.messageId, netPacket)
     }
 
     /**

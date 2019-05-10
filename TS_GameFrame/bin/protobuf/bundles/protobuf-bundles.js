@@ -76,6 +76,19 @@ $root.PBMessage = (function() {
         };
 
         /**
+         * Encodes the specified AwesomeMessage message, length delimited. Does not implicitly {@link PBMessage.AwesomeMessage.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof PBMessage.AwesomeMessage
+         * @static
+         * @param {PBMessage.IAwesomeMessage} message AwesomeMessage message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        AwesomeMessage.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
          * Decodes an AwesomeMessage message from the specified reader or buffer.
          * @function decode
          * @memberof PBMessage.AwesomeMessage
@@ -104,6 +117,22 @@ $root.PBMessage = (function() {
             if (!message.hasOwnProperty("awesome_field"))
                 throw $util.ProtocolError("missing required 'awesome_field'", { instance: message });
             return message;
+        };
+
+        /**
+         * Decodes an AwesomeMessage message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof PBMessage.AwesomeMessage
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {PBMessage.AwesomeMessage} AwesomeMessage
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        AwesomeMessage.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
         };
 
         /**
@@ -207,6 +236,19 @@ $root.PBMessage = (function() {
         };
 
         /**
+         * Encodes the specified GM_VerifyVersion message, length delimited. Does not implicitly {@link PBMessage.GM_VerifyVersion.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof PBMessage.GM_VerifyVersion
+         * @static
+         * @param {PBMessage.IGM_VerifyVersion} message GM_VerifyVersion message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        GM_VerifyVersion.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
          * Decodes a GM_VerifyVersion message from the specified reader or buffer.
          * @function decode
          * @memberof PBMessage.GM_VerifyVersion
@@ -243,6 +285,22 @@ $root.PBMessage = (function() {
             if (!message.hasOwnProperty("platform"))
                 throw $util.ProtocolError("missing required 'platform'", { instance: message });
             return message;
+        };
+
+        /**
+         * Decodes a GM_VerifyVersion message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof PBMessage.GM_VerifyVersion
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {PBMessage.GM_VerifyVersion} GM_VerifyVersion
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        GM_VerifyVersion.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
         };
 
         /**
@@ -362,6 +420,19 @@ $root.PBMessage = (function() {
         };
 
         /**
+         * Encodes the specified GM_VerifyVersionReturn message, length delimited. Does not implicitly {@link PBMessage.GM_VerifyVersionReturn.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof PBMessage.GM_VerifyVersionReturn
+         * @static
+         * @param {PBMessage.IGM_VerifyVersionReturn} message GM_VerifyVersionReturn message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        GM_VerifyVersionReturn.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
          * Decodes a GM_VerifyVersionReturn message from the specified reader or buffer.
          * @function decode
          * @memberof PBMessage.GM_VerifyVersionReturn
@@ -401,6 +472,22 @@ $root.PBMessage = (function() {
             if (!message.hasOwnProperty("serverversion"))
                 throw $util.ProtocolError("missing required 'serverversion'", { instance: message });
             return message;
+        };
+
+        /**
+         * Decodes a GM_VerifyVersionReturn message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof PBMessage.GM_VerifyVersionReturn
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {PBMessage.GM_VerifyVersionReturn} GM_VerifyVersionReturn
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        GM_VerifyVersionReturn.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
         };
 
         /**

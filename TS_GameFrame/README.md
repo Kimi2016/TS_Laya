@@ -28,11 +28,11 @@ npm install @egret/protobuf -g
 ## 如何使用
 
 ```
-# 假设用户有个名为 egret-project 的白鹭项目
-cd egret-project
+# 假设用户有个名为 laya-project 的白鹭项目
+cd laya-project
 # 将代码和项目结构拷贝至白鹭项目中
 pb-egret add
-# 将 protofile 文件放在 egret-project/protobuf/protofile 文件夹中
+# 将 protofile 文件放在 laya-project/protobuf/protofile 文件夹中
 pb-egret generate
 # 文件将会生成到 protobuf/bundles 文件夹中
 

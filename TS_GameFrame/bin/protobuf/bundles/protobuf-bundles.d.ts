@@ -39,6 +39,14 @@ declare namespace PBMessage {
         public static encode(message: PBMessage.IAwesomeMessage, writer?: protobuf.Writer): protobuf.Writer;
 
         /**
+         * Encodes the specified AwesomeMessage message, length delimited. Does not implicitly {@link PBMessage.AwesomeMessage.verify|verify} messages.
+         * @param message AwesomeMessage message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: PBMessage.IAwesomeMessage, writer?: protobuf.Writer): protobuf.Writer;
+
+        /**
          * Decodes an AwesomeMessage message from the specified reader or buffer.
          * @param reader Reader or buffer to decode from
          * @param [length] Message length if known beforehand
@@ -47,6 +55,15 @@ declare namespace PBMessage {
          * @throws {protobuf.util.ProtocolError} If required fields are missing
          */
         public static decode(reader: (protobuf.Reader|Uint8Array), length?: number): PBMessage.AwesomeMessage;
+
+        /**
+         * Decodes an AwesomeMessage message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns AwesomeMessage
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: (protobuf.Reader|Uint8Array)): PBMessage.AwesomeMessage;
 
         /**
          * Verifies an AwesomeMessage message.
@@ -103,6 +120,14 @@ declare namespace PBMessage {
         public static encode(message: PBMessage.IGM_VerifyVersion, writer?: protobuf.Writer): protobuf.Writer;
 
         /**
+         * Encodes the specified GM_VerifyVersion message, length delimited. Does not implicitly {@link PBMessage.GM_VerifyVersion.verify|verify} messages.
+         * @param message GM_VerifyVersion message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: PBMessage.IGM_VerifyVersion, writer?: protobuf.Writer): protobuf.Writer;
+
+        /**
          * Decodes a GM_VerifyVersion message from the specified reader or buffer.
          * @param reader Reader or buffer to decode from
          * @param [length] Message length if known beforehand
@@ -111,6 +136,15 @@ declare namespace PBMessage {
          * @throws {protobuf.util.ProtocolError} If required fields are missing
          */
         public static decode(reader: (protobuf.Reader|Uint8Array), length?: number): PBMessage.GM_VerifyVersion;
+
+        /**
+         * Decodes a GM_VerifyVersion message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns GM_VerifyVersion
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: (protobuf.Reader|Uint8Array)): PBMessage.GM_VerifyVersion;
 
         /**
          * Verifies a GM_VerifyVersion message.
@@ -173,6 +207,14 @@ declare namespace PBMessage {
         public static encode(message: PBMessage.IGM_VerifyVersionReturn, writer?: protobuf.Writer): protobuf.Writer;
 
         /**
+         * Encodes the specified GM_VerifyVersionReturn message, length delimited. Does not implicitly {@link PBMessage.GM_VerifyVersionReturn.verify|verify} messages.
+         * @param message GM_VerifyVersionReturn message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: PBMessage.IGM_VerifyVersionReturn, writer?: protobuf.Writer): protobuf.Writer;
+
+        /**
          * Decodes a GM_VerifyVersionReturn message from the specified reader or buffer.
          * @param reader Reader or buffer to decode from
          * @param [length] Message length if known beforehand
@@ -181,6 +223,15 @@ declare namespace PBMessage {
          * @throws {protobuf.util.ProtocolError} If required fields are missing
          */
         public static decode(reader: (protobuf.Reader|Uint8Array), length?: number): PBMessage.GM_VerifyVersionReturn;
+
+        /**
+         * Decodes a GM_VerifyVersionReturn message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns GM_VerifyVersionReturn
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: (protobuf.Reader|Uint8Array)): PBMessage.GM_VerifyVersionReturn;
 
         /**
          * Verifies a GM_VerifyVersionReturn message.

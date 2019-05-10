@@ -3,7 +3,7 @@
 		"no-create": false,
 		"no-verify": false,
 		"no-convert": true,
-		"no-delimited": true
+		"no-delimited": false
 	},
 	"sourceRoot": "protofile",
 	"outputFile": "bundles/protobuf-bundles.js"
