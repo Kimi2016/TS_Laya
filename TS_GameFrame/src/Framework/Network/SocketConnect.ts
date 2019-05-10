@@ -21,6 +21,9 @@ export default class SocketConnect {
     private pbMessageName: any = null
     private protoRoot: any = null;
 
+    public onConnect:Function = null;
+    public onDisconnect:Function = null;
+
     //private sendNetPacket: Array<NetPacket> = null
     //private receiveNetPacket: Array<NetPacket> = null
 
@@ -68,10 +71,16 @@ export default class SocketConnect {
     //正确建立连接
     private openHandler(event: any = null): void {
         console.log(this.url + this.tips + "  正确建立连接")
+        if (this.onConnect){
+            this.onConnect()
+        }
     }
     //关闭连接事件
     private closeHandler(event: any = null): void {
         console.log(this.url + this.tips + " 关闭连接事件")
+        if (this.onDisconnect){
+            this.onDisconnect()
+        }
     }
     //连接出错
     private errorHandler(e: any = null): void {

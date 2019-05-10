@@ -37,6 +37,16 @@ class GameClient {
     public sendMessage(msgId: number, msg: any): void {
         this.socketConnect.sendMessage(msgId, msg);
     }
+
+    public onConnectCallback(callback:Function)
+    {
+        this.socketConnect.onConnect = callback;
+    }
+
+    public onDisconnectCallback(callback:Function)
+    {
+        this.socketConnect.onDisconnect = callback;
+    }
 }
 
 
