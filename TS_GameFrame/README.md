@@ -11,7 +11,7 @@
 
 ## 原理
 
-封装了 protobufjs 库及命令行。使用 protobufjs 6.8.4 的运行时库。
+封装了 protobufjs 库及命令行。使用 protobufjs 6.8.8 的运行时库。
 
 protobufjs 自身存在着 pbts 命令，虽然也可以生成 .d.ts 文件，但是在全局模式而非 ES6 module 的情况下存在一些错误，本项目致力于解决这个问题，使 protobufjs 可以在非 ES6 模块项目中（比如白鹭引擎）中也可以使用 protobufjs 
 
@@ -21,7 +21,7 @@ protobufjs 提供了多种使用方式，由于微信小游戏禁止 eval , new 
 ## 如何安装
 
 ```
-npm install protobufjs@6.8.4 -g
+npm install protobufjs@6.8.8 -g
 npm install @egret/protobuf -g
 ```
 
