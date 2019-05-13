@@ -2,11 +2,11 @@ import { ui } from "../ui/layaMaxUI";
 import NetworkManager from "../Framework/Network/NetworkManager";
 import NetEventDispatcher from "../Framework/Event/NetEventDispatcher";
 import NetPacket from "../Framework/Network/NetPacket";
-import GameMessageName from "../Framework/Network/GameMessageName";
+import GameMessageName from "../Framework/Network/NetMessageName";
 
 
 //主界面
-export default class MainUI extends ui.MainSceneUI {
+export default class MainUI extends ui.MainUI {
 
     constructor() { super(); }
 

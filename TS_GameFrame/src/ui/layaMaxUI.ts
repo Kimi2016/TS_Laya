@@ -4,14 +4,14 @@ import Dialog=Laya.Dialog;
 import Scene=Laya.Scene;
 var REG: Function = Laya.ClassUtils.regClass;
 export module ui {
-    export class MainSceneUI extends Scene {
+    export class MainUI extends Scene {
         constructor(){ super()}
         createChildren():void {
             super.createChildren();
-            this.loadScene("MainScene");
+            this.loadScene("Main");
         }
     }
-    REG("ui.MainSceneUI",MainSceneUI);
+    REG("ui.MainUI",MainUI);
     export class TimeLineUI extends Dialog {
 		public bear:Laya.Animation;
         constructor(){ super()}

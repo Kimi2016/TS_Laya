@@ -2,17 +2,17 @@
 /**
  * Protobuf 消息名称匹配
  */
-export default class GameMessageName {
+export default class NetMessageName {
     static messageMap = {}
     static isInit = false
     static getMap(): any {
-        if (GameMessageName.isInit){
-            return GameMessageName.messageMap
+        if (NetMessageName.isInit){
+            return NetMessageName.messageMap
         }
-        GameMessageName.isInit = true
+        NetMessageName.isInit = true
 
         //MessageName
-        let map = GameMessageName.messageMap
+        let map = NetMessageName.messageMap
 
         map[GameMessage.GM_VERIFY_VERSION]='GM_VerifyVersion';
         map[GameMessage.GM_VERSION_RETURN]='GM_VerifyVersionReturn';

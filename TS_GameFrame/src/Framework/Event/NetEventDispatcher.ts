@@ -58,10 +58,10 @@ export default class NetEventDispatcher {
         if (this.removeListeners.length > 0) {
             let observer = this.removeListeners.pop();
             observer.reset(context, callback);
-            this.listeners[name].push(observer);
+            this.listeners[messageID].push(observer);
         }
         else {
-            this.listeners[name].push(new Observer(context, callback));
+            this.listeners[messageID].push(new Observer(context, callback));
         }
     }
     public unRegister(messageID: number, context: any, callback: Function) {
