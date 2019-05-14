@@ -26,6 +26,7 @@ import NetworkManager from './Framework/Network/NetworkManager';
 import Test_12_TiledMap from './study/Test_12_TiledMap';
 import Test_13_DomElement from './study/Test_13_DomElement';
 import Test_14_Shader from './study/Test_14_Shader';
+import Test_20_LayaAir3D from './study/Test_20_LayaAir3D';
 
 //启动类
 class AppMain {
@@ -106,9 +107,11 @@ class AppMain {
         //new Test_11_Sound();
         //new Test_0_1_Socket();
         //new Test_0_Network_ProtocolBuffer();
-        new Test_12_TiledMap();
+        //new Test_12_TiledMap();
         //new Test_13_DomElement();
         //new Test_14_Shader();
+        
+        new Test_20_LayaAir3D();
     }
 }
 

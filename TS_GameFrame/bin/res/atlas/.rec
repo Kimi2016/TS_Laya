@@ -45,3 +45,5 @@ P 35FDB6EB eat4.png
 D sound
 R 1DC3ABD8 destroy.wav
 R FF0B6E8D hit.wav
+D UI_Loading
+P 28E3BCE1 loading.png

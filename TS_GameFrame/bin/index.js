@@ -11,9 +11,12 @@ window.screenOrientation = "sensor_landscape";
 loadLib("libs/laya.core.js")
 loadLib("libs/laya.webgl.js")
 loadLib("libs/laya.filter.js")
+loadLib("libs/laya.particle.js")
 loadLib("libs/laya.tiledmap.js")
 loadLib("libs/laya.ui.js")
+loadLib("libs/laya.d3.js")
 loadLib("libs/laya.physics.js")
+loadLib("libs/laya.d3Plugin.js")
 loadLib("libs/qrcode.js")
 //-----libs-end-------
 loadLib("js/bundle.js");

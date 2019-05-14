@@ -3,6 +3,8 @@ import NetworkManager from "../Framework/Network/NetworkManager";
 import NetEventDispatcher from "../Framework/Event/NetEventDispatcher";
 import NetPacket from "../Framework/Network/NetPacket";
 import GameMessageName from "../Framework/Network/NetMessageName";
+import UIPath from "../UIPath";
+import UIManager from "../Framework/UI/UIManager";
 
 
 //主界面
@@ -31,7 +33,12 @@ export default class MainUI extends ui.MainUI {
 
 
     onAwake(): void {
+        //Laya.Scene.open(UIPath.testPath,false);
+        //Laya.Scene.open(UIPath.testPath1,false);
+        //Laya.Scene.open(UIPath.UI_Loading,false);
+    }
 
+    private testNetwork(): void {
         console.log("Precision safe." + (Math.pow(2, 53) - 1));
 
         //var msg = {
@@ -45,18 +52,14 @@ export default class MainUI extends ui.MainUI {
         //console.log(buffer);
         //
 
-        NetworkManager.getInstance().createClient(0, "ws://192.168.2.126:50000");
-        //定时执行一次(间隔时间)
-        Laya.timer.once(2000, this, this.testNetwork);
-    }
-
-    private testNetwork(): void {
-        console.log("testNetwork()");
-        var msg = {
-            version: "1.5.4",				//客户端版本号
-            platform: 9007199254740991,             ///平台
-            istest: 0,///    0、正常，1、测试，不需要验证版本
-        }
-        NetworkManager.getInstance().loginSendMessage(GameMessage.GM_VERIFY_VERSION,  msg);
+        var gameClient = NetworkManager.getInstance().createClient(0, "ws://192.168.2.126:50000");
+        gameClient.onConnectCallback(function () {
+            var msg = {
+                version: "1.5.4",				//客户端版本号
+                platform: 9007199254740991,             ///平台
+                istest: 0,///    0、正常，1、测试，不需要验证版本
+            }
+            NetworkManager.getInstance().loginSendMessage(GameMessage.GM_VERIFY_VERSION, msg);
+        })
     }
 }

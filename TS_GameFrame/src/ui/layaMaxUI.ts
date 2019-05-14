@@ -4,7 +4,7 @@ import Dialog=Laya.Dialog;
 import Scene=Laya.Scene;
 var REG: Function = Laya.ClassUtils.regClass;
 export module ui {
-    export class MainUI extends Scene {
+    export class MainUI extends View {
         constructor(){ super()}
         createChildren():void {
             super.createChildren();
@@ -12,6 +12,22 @@ export module ui {
         }
     }
     REG("ui.MainUI",MainUI);
+    export class TestUI extends View {
+        constructor(){ super()}
+        createChildren():void {
+            super.createChildren();
+            this.loadScene("Test");
+        }
+    }
+    REG("ui.TestUI",TestUI);
+    export class Test1UI extends View {
+        constructor(){ super()}
+        createChildren():void {
+            super.createChildren();
+            this.loadScene("Test1");
+        }
+    }
+    REG("ui.Test1UI",Test1UI);
     export class TimeLineUI extends Dialog {
 		public bear:Laya.Animation;
         constructor(){ super()}
@@ -21,4 +37,15 @@ export module ui {
         }
     }
     REG("ui.TimeLineUI",TimeLineUI);
+}
+export module ui.UI_Loading {
+    export class UI_LoadingUI extends View {
+		public ani1:Laya.FrameAnimation;
+        constructor(){ super()}
+        createChildren():void {
+            super.createChildren();
+            this.loadScene("UI_Loading/UI_Loading");
+        }
+    }
+    REG("ui.UI_Loading.UI_LoadingUI",UI_LoadingUI);
 }

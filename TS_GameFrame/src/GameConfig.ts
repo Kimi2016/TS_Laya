@@ -11,7 +11,7 @@ export default class GameConfig{
     static screenMode:string="horizontal";
     static alignV:string="top";
     static alignH:string="left";
-    static startScene:any="MainScene.scene";
+    static startScene:any="Main.scene";
     static sceneRoot:string="";
     static debug:boolean=true;
     static stat:boolean=true;

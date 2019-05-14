@@ -1,12 +1,13 @@
 {
     "x":0,
-    "type":"Scene",
+    "type":"View",
     "selectedBox":2,
-    "searchKey":"Scene",
-    "props":{"width":640,"sceneColor":"#7f7f7f","runtime":"script/MainUI.ts","height":1136},
+    "selecteID":3,
+    "searchKey":"View,MainUI",
+    "props":{"width":640,"sceneColor":"#7f7f7f","runtime":"script/MainUI.ts","name":"MainUI","height":1136},
     "nodeParent":-1,
     "maxID":16,
-    "label":"Scene",
+    "label":"MainUI",
     "isOpen":true,
     "isDirectory":true,
     "isAniNode":true,
@@ -17,7 +18,7 @@
             "x":15,
             "type":"Sprite",
             "searchKey":"Sprite",
-            "props":{"y":208,"x":402,"width":476,"texture":"Fruits/8.png","height":518},
+            "props":{"zOrder":0,"y":318.5,"x":82,"width":476,"texture":"Fruits/8.png","height":518},
             "nodeParent":2,
             "label":"Sprite",
             "isOpen":true,
@@ -32,73 +33,60 @@
             "x":15,
             "type":"Panel",
             "searchKey":"Panel",
-            "props":{"y":374,"x":48,"width":230,"vScrollBarSkin":"comp/vscroll.png","height":328},
+            "props":{"y":374,"x":69,"width":195,"visible":true,"vScrollBarSkin":"comp/vscroll.png","height":407},
             "nodeParent":2,
             "label":"Panel",
             "isOpen":true,
             "isDirectory":true,
             "isAniNode":true,
             "hasChild":true,
-            "compId":15,
+            "compId":10,
             "child":[
                 {
                     "x":30,
-                    "type":"Panel",
-                    "searchKey":"Panel",
-                    "props":{"y":0,"x":21,"width":275,"height":407},
-                    "nodeParent":15,
-                    "label":"Panel",
-                    "isOpen":true,
-                    "isDirectory":true,
+                    "type":"Sprite",
+                    "searchKey":"Sprite",
+                    "props":{"zOrder":10,"y":165,"x":29,"width":108,"texture":"Fruits/eat4.png","height":108},
+                    "nodeParent":10,
+                    "label":"Sprite",
+                    "isDirectory":false,
                     "isAniNode":true,
-                    "hasChild":true,
-                    "compId":10,
+                    "hasChild":false,
+                    "compId":11,
                     "child":[
-                        {
-                            "x":45,
-                            "type":"Sprite",
-                            "searchKey":"Sprite",
-                            "props":{"y":167.5,"x":50,"texture":"test/bear_51x72.png"},
-                            "nodeParent":10,
-                            "label":"Sprite",
-                            "isDirectory":false,
-                            "isAniNode":true,
-                            "hasChild":false,
-                            "compId":11,
-                            "child":[
-                                ]
-                        },
-                        {
-                            "x":45,
-                            "type":"Sprite",
-                            "searchKey":"Sprite",
-                            "props":{"y":27,"x":41,"texture":"test/bear_68x96.png"},
-                            "nodeParent":10,
-                            "label":"Sprite",
-                            "isOpen":true,
-                            "isDirectory":false,
-                            "isAniNode":true,
-                            "hasChild":false,
-                            "compId":12,
-                            "child":[
-                                ]
-                        },
-                        {
-                            "x":45,
-                            "type":"Sprite",
-                            "searchKey":"Sprite",
-                            "props":{"y":195,"x":3,"width":143,"texture":"Fruits/8.png","height":199},
-                            "nodeParent":10,
-                            "label":"Sprite",
-                            "isOpen":true,
-                            "isDirectory":false,
-                            "isAniNode":true,
-                            "hasChild":false,
-                            "compId":13,
-                            "child":[
-                                ]
-                        }]
-                }]
+                        ]
+                },
+                {
+                    "x":30,
+                    "type":"Sprite",
+                    "searchKey":"Sprite",
+                    "props":{"y":27,"x":35,"width":96,"texture":"Fruits/eat3.png","height":113},
+                    "nodeParent":10,
+                    "label":"Sprite",
+                    "isOpen":true,
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":12,
+                    "child":[
+                        ]
+                },
+                {
+                    "x":30,
+                    "type":"Sprite",
+                    "searchKey":"Sprite",
+                    "props":{"y":281,"x":17.5,"width":143,"texture":"Fruits/8.png","height":199},
+                    "nodeParent":10,
+                    "label":"Sprite",
+                    "isOpen":true,
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":13,
+                    "child":[
+                        ]
+                }],
+            "$HIDDEN":false
         }],
     "animations":[
         {

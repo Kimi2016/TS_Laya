@@ -1,0 +1,1 @@
+{"type":"View","props":{"width":640,"name":"Test1","height":1136},"compId":2,"child":[{"type":"Sprite","props":{"y":231,"x":0,"texture":"Fruits/5.png"},"compId":3,"child":[{"type":"Sprite","props":{"y":0,"x":288,"texture":"Fruits/8.png"},"compId":4}]}],"loadList":["Fruits/5.png","Fruits/8.png"],"loadList3D":[]}
