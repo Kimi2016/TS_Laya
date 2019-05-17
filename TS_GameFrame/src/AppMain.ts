@@ -27,6 +27,8 @@ import Test_12_TiledMap from './study/Test_12_TiledMap';
 import Test_13_DomElement from './study/Test_13_DomElement';
 import Test_14_Shader from './study/Test_14_Shader';
 import Test_20_LayaAir3D from './study/Test_20_LayaAir3D';
+import Test_22_LayaAir3D_Animation from './study/Test_22_LayaAir3D_Animation';
+import Test_24_Pathfinding from './study/Test_24_Pathfinding';
 
 //启动类
 class AppMain {
@@ -82,10 +84,10 @@ class AppMain {
     }
 
     onConfigLoaded(): void {
-        //加载IDE指定的场景
-        GameConfig.startScene && Laya.Scene.open(GameConfig.startScene);
 
         this.setup();
+        //加载IDE指定的场景
+        //GameConfig.startScene && Laya.Scene.open(GameConfig.startScene);
     }
 
     private setup(): void {
@@ -111,7 +113,12 @@ class AppMain {
         //new Test_13_DomElement();
         //new Test_14_Shader();
         
-        new Test_20_LayaAir3D();
+        //new Test_20_LayaAir3D();
+        //new Test_22_LayaAir3D_Animation();
+
+        console.log("Test_24_Pathfinding");
+        
+        new Test_24_Pathfinding();
     }
 }
 

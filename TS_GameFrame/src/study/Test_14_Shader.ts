@@ -96,7 +96,7 @@ class myShaderSprite extends Laya.Script {
         //context:Laya.RenderContext
         console.log(context);
 
-        (context.ctx as Laya.WebGLContext2D).drawMesh(x, y, this.iBuffer, this.vBuffer, this.iNum, null, myShader.shader, this.shaderValue, 0);
+        //(context.ctx as Laya.WebGLContext2D).drawMesh(x, y, this.iBuffer, this.vBuffer, this.iNum, null, myShader.shader, this.shaderValue, 0);
     }
 }
 
