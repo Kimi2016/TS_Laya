@@ -3372,7 +3372,7 @@ var TextRender=(function(){
 		var xoff=Math.max(orix-TextRender.pixelBBX[0],0);
 		var yoff=Math.max(oriy-TextRender.pixelBBX[1],0);
 		var bbxw=TextRender.pixelBBX[2]-TextRender.pixelBBX[0];
-		var bbxh=TextRender.pixelBBX[3]-TextRender.pixelBBX[1];
+		var bbxh=TextRender.pixelBBX[3]-TextRender.pixelBBX[1]+1;
 		var sizeinfo=xoff<<24 |yoff<<16 | bbxw << 8 | bbxh;
 		this.fontSizeInfo[font]=sizeinfo;
 		return sizeinfo;

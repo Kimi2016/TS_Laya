@@ -33107,7 +33107,7 @@ var ShurikenParticleRenderer=(function(_super){
 	*/
 	__proto._needRender=function(boundFrustum){
 		if (boundFrustum){
-			if (boundFrustum.containsBoundBox(this._bounds._getBoundBox())!==/*laya.d3.math.ContainmentType.Disjoint*/0){
+			if (boundFrustum.containsBoundBox(this.bounds._getBoundBox())!==/*laya.d3.math.ContainmentType.Disjoint*/0){
 				if ((this._owner).particleSystem.isAlive)
 					return true;
 				else

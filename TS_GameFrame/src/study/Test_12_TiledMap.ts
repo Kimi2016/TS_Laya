@@ -28,7 +28,7 @@ export default class Test_12_TiledMap {
     private MapY: number = 0;
     private mLastMouseX: number;
     private mLastMouseY: number;
-    constructor()  {
+    constructor() {
         console.log("Test_12_TiledMap");
         //初始化舞台
         Laya.init(Laya.Browser.width, Laya.Browser.height, Laya.WebGL);
@@ -40,16 +40,41 @@ export default class Test_12_TiledMap {
         this.tMap.createMap("res/TiledMap/orthogonal.json", viewRect, Laya.Handler.create(this, this.onMapLoaded));
     }
     private onMapLoaded(): void {
+        var sprite = this.tMap.mapSprite() as Laya.Node
+        console.log("this.tMap.mapSprite:" + (sprite instanceof Laya.Sprite));
+        console.log("this.tMap.mapSprite.parent:" + (sprite.parent instanceof Laya.Sprite));
+        Laya.stage.setChildIndex(sprite, 0)
+        
+
         console.log("onMapLoaded");
         //设置缩放中心点为视口的左上角
         this.tMap.setViewPortPivotByScale(0, 0);
         //将原地图放大3倍
-        this.tMap.scale = 2;
+        this.tMap.scale = 3;
+
         Laya.stage.on(Laya.Event.RESIZE, this, this.resize);
-        Laya.stage.on(Laya.Event.MOUSE_DOWN, this, this.mouseDown);
-        Laya.stage.on(Laya.Event.MOUSE_UP, this, this.mouseUp);
+        //Laya.stage.on(Laya.Event.MOUSE_DOWN, this, this.mouseDown);
+        //Laya.stage.on(Laya.Event.MOUSE_UP, this, this.mouseUp);
+        Laya.stage.on(Laya.Event.KEY_DOWN, this, this.onKeyDown)
         this.resize();
     }
+
+    /**
+     * 键盘控制
+     * @param e 
+     */
+    onKeyDown(e: Laya.Event): void {
+        if (e.keyCode == Laya.Keyboard.UP) {
+
+        } else if (e.keyCode == Laya.Keyboard.DOWN) {
+
+        } else if (e.keyCode == Laya.Keyboard.LEFT) {
+
+        } else if (e.keyCode == Laya.Keyboard.RIGHT) {
+
+        }
+    }
+
     /**
      * 移动地图视口
      */
@@ -59,12 +84,12 @@ export default class Test_12_TiledMap {
         //移动地图视口
         this.tMap.moveViewPort(moveX, moveY);
     }
-    private mouseUp(): void  {
+    private mouseUp(): void {
         this.MapX = this.MapX - (Laya.stage.mouseX - this.mLastMouseX);
         this.MapY = this.MapY - (Laya.stage.mouseY - this.mLastMouseY);
         Laya.stage.off(Laya.Event.MOUSE_MOVE, this, this.mouseMove);
     }
-    private mouseDown(): void  {
+    private mouseDown(): void {
         this.mLastMouseX = Laya.stage.mouseX;
         this.mLastMouseY = Laya.stage.mouseY;
         Laya.stage.on(Laya.Event.MOUSE_MOVE, this, this.mouseMove);
@@ -73,7 +98,7 @@ export default class Test_12_TiledMap {
      *  改变视口大小
      *  重设地图视口区域
      */
-    private resize(): void  {
+    private resize(): void {
         //改变视口大小
         this.tMap.changeViewPort(this.MapX, this.MapY, Laya.Browser.width, Laya.Browser.height);
     }

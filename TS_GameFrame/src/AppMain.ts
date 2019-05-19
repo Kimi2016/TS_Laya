@@ -29,6 +29,11 @@ import Test_14_Shader from './study/Test_14_Shader';
 import Test_20_LayaAir3D from './study/Test_20_LayaAir3D';
 import Test_22_LayaAir3D_Animation from './study/Test_22_LayaAir3D_Animation';
 import Test_24_Pathfinding from './study/Test_24_Pathfinding';
+import Test_1_OrthographicCamera from './study3D/Test_1_OrthographicCamera';
+import Test_2_Sprite3DTransform from './study3D/Test_2_Sprite3DTransform';
+import Test_3_MeshLoad from './study3D/Test_3_MeshLoad';
+import Test_4_CustomMesh from './study3D/Test_4_CustomMesh';
+import Test_5_LightDemo from './study3D/Test_5_LightDemo';
 
 //启动类
 class AppMain {
@@ -85,6 +90,7 @@ class AppMain {
 
     onConfigLoaded(): void {
 
+        this.setup3D();
         this.setup();
         //加载IDE指定的场景
         //GameConfig.startScene && Laya.Scene.open(GameConfig.startScene);
@@ -109,16 +115,22 @@ class AppMain {
         //new Test_11_Sound();
         //new Test_0_1_Socket();
         //new Test_0_Network_ProtocolBuffer();
-        //new Test_12_TiledMap();
+        new Test_12_TiledMap();
         //new Test_13_DomElement();
         //new Test_14_Shader();
-        
+
         //new Test_20_LayaAir3D();
         //new Test_22_LayaAir3D_Animation();
 
-        console.log("Test_24_Pathfinding");
-        
-        new Test_24_Pathfinding();
+        //new Test_24_Pathfinding();
+    }
+
+    private setup3D(): void {
+        //new Test_1_OrthographicCamera();
+        //new Test_2_Sprite3DTransform();
+        //new Test_3_MeshLoad();
+        //new  Test_4_CustomMesh();
+        new  Test_5_LightDemo();
     }
 }
 
