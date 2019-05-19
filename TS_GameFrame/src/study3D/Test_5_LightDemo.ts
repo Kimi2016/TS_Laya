@@ -12,10 +12,15 @@ export default class Test_5_LightDemo {
 
         this.addLight()
 
-        Laya.Sprite3D.load("res/animation/player/mage/mage.lh", Laya.Handler.create(this, this.onLoadCompleted));
+        Laya.Sprite3D.load("./res/animation/player/mage/mage.lh", Laya.Handler.create(this, this.onLoadCompleted));
 
         Laya.stage.on(Laya.Event.MOUSE_DOWN, this, this.onMouseDown)
         Laya.stage.on(Laya.Event.MOUSE_UP, this, this.onMouseUp)
+    }
+    
+    onLoadCompleted(sprite3D: Laya.Sprite3D): void {
+        this.role3D = sprite3D
+        this.scene.addChild(sprite3D);
     }
 
     addLight(): void {
@@ -40,10 +45,6 @@ export default class Test_5_LightDemo {
     private role3D: Laya.Sprite3D;
     private mouseX: number = 0;
     private rotateSpeed:number = 0.3;
-    onLoadCompleted(sprite3D: Laya.Sprite3D): void {
-        this.role3D = sprite3D
-        this.scene.addChild(sprite3D);
-    }
 
     onMouseDown(): void {
         this.mouseX = Laya.stage.mouseX;

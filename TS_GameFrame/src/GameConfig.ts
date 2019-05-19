@@ -5,15 +5,15 @@ import Test_9_TimeLineUI from "./study/Test_9_TimeLineUI"
 * 游戏初始化配置;
 */
 export default class GameConfig{
-    static width:number=1136;
-    static height:number=640;
+    static width:number=640;
+    static height:number=1136;
     static scaleMode:string="fixedwidth";
     static screenMode:string="vertical";
     static alignV:string="top";
     static alignH:string="left";
     static startScene:any="Main.scene";
     static sceneRoot:string="";
-    static debug:boolean=false;
+    static debug:boolean=true;
     static stat:boolean=true;
     static physicsDebug:boolean=false;
     static exportSceneToJson:boolean=true;

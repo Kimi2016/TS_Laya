@@ -34,6 +34,10 @@ import Test_2_Sprite3DTransform from './study3D/Test_2_Sprite3DTransform';
 import Test_3_MeshLoad from './study3D/Test_3_MeshLoad';
 import Test_4_CustomMesh from './study3D/Test_4_CustomMesh';
 import Test_5_LightDemo from './study3D/Test_5_LightDemo';
+import Test_6_MultiCamera from './study3D/Test_6_MultiCamera';
+import Test_7_OrthographicCamera from './study3D/Test_7_OrthographicCamera';
+import Test_8_D3SpaceToD2Space from './study3D/Test_8_D3SpaceToD2Space';
+import Test_9_SkinAnimation_New from './study3D/Test_9_SkinAnimation_New';
 
 //启动类
 class AppMain {
@@ -130,7 +134,11 @@ class AppMain {
         //new Test_2_Sprite3DTransform();
         //new Test_3_MeshLoad();
         //new  Test_4_CustomMesh();
-        new  Test_5_LightDemo();
+        //new  Test_5_LightDemo();
+        //new Test_6_MultiCamera();
+        //new Test_7_OrthographicCamera();
+        //new Test_8_D3SpaceToD2Space();
+        new Test_9_SkinAnimation_New();
     }
 }
 

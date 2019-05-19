@@ -24,7 +24,7 @@ export default class Test_2_Sprite3DTransform {
         Laya.Sprite3D.load("res/animation/player/mage/mage.lh", Laya.Handler.create(this, this.onLoadCompleted, [scene]));
     }
 
-    onLoadCompleted(scene: Laya.Scene, sprite3D: Laya.Sprite3D): void {
+    onLoadCompleted(scene: Laya.Scene3D, sprite3D: Laya.Sprite3D): void {
         this.role_clone0 = sprite3D;
         scene.addChild(sprite3D);
 
