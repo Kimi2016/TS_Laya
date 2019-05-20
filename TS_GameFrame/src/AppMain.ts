@@ -38,6 +38,7 @@ import Test_6_MultiCamera from './study3D/Test_6_MultiCamera';
 import Test_7_OrthographicCamera from './study3D/Test_7_OrthographicCamera';
 import Test_8_D3SpaceToD2Space from './study3D/Test_8_D3SpaceToD2Space';
 import Test_9_SkinAnimation_New from './study3D/Test_9_SkinAnimation_New';
+import Test_12_3DTiledMap from './study3D/Test_12_3DTiledMap';
 
 //启动类
 class AppMain {
@@ -119,7 +120,7 @@ class AppMain {
         //new Test_11_Sound();
         //new Test_0_1_Socket();
         //new Test_0_Network_ProtocolBuffer();
-        new Test_12_TiledMap();
+        //new Test_12_TiledMap();
         //new Test_13_DomElement();
         //new Test_14_Shader();
 
@@ -136,9 +137,10 @@ class AppMain {
         //new  Test_4_CustomMesh();
         //new  Test_5_LightDemo();
         //new Test_6_MultiCamera();
-        //new Test_7_OrthographicCamera();
+        new Test_7_OrthographicCamera();
         //new Test_8_D3SpaceToD2Space();
-        new Test_9_SkinAnimation_New();
+        //new Test_9_SkinAnimation_New();
+        //new Test_12_3DTiledMap();
     }
 }
 

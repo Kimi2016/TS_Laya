@@ -14,8 +14,17 @@ export default class Test_7_OrthographicCamera {
         this.camera = new Laya.Camera(0, 0.1, 1000)
         this.camera.transform.rotate(new Laya.Vector3(-45, 0, 0), false, false);
         this.camera.transform.translate(new Laya.Vector3(0, 2, 500))
-        this.camera.orthographic = true
+
+
+        //正交投影属性设置
+        this.camera.orthographic = true;
+        //正交垂直矩阵距离，控制3D物体远近与现实大小
         this.camera.orthographicVerticalSize = 10;
+        //清除标记，仅深度
+        this.camera.clearFlag = Laya.BaseCamera.CLEARFLAG_DEPTHONLY;
+        this.camera.clearColor = null;
+        this.camera.cullingMask = Math.pow(2, 0) | Math.pow(2, 1)
+
         scene.addChild(this.camera)
 
         var directionLight: Laya.DirectionLight = new Laya.DirectionLight();

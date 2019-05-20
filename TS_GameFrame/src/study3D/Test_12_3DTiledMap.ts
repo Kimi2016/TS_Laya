@@ -58,18 +58,26 @@ export default class Test_12_3DTiledMap {
 
     //与UI搭配的3D场景
     addUIScene():void{
-        var sprite = this.tMap.mapSprite() as Laya.Node
+        //重设置层次
+        //var sprite = this.tMap.mapSprite()
         //Laya.stage.setChildIndex(sprite, 0)
 
-        var scene:Laya.Scene = new Laya.Scene();
         var scene3D:Laya.Scene3D = new Laya.Scene3D();
-        scene.addChild(scene3D)
-        Laya.stage.addChild(scene)
+        Laya.stage.addChild(scene3D)
 
         var camera: Laya.Camera = new Laya.Camera(0, 0.1, 100);
         scene3D.addChild(camera);
         camera.transform.translate(new Laya.Vector3(0, 5, 10));
         camera.transform.rotate(new Laya.Vector3(-20, 0, 0), true, false);
+        //正交投影属性设置
+        camera.orthographic = true;
+        //正交垂直矩阵距离，控制3D物体远近与现实大小
+        camera.orthographicVerticalSize = 7;
+        //清除标记，仅深度
+        camera.clearFlag = Laya.BaseCamera.CLEARFLAG_DEPTHONLY;
+        camera.clearColor = null;
+        camera.cullingMask = Math.pow(2, 0) | Math.pow(2, 1)
+        //console.log(camera.cullingMask);
 
         Laya.Sprite3D.load("res/animation/player/mage/mage.lh", Laya.Handler.create(this, this.onLoadCompleted, [scene3D]));
     }

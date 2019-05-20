@@ -23,6 +23,15 @@ export default class Test_8_D3SpaceToD2Space {
         this.camera.orthographic = true
         this.camera.orthographicVerticalSize = 10;
 
+        //正交投影属性设置
+        this.camera.orthographic = true;
+        //正交垂直矩阵距离，控制3D物体远近与现实大小
+        this.camera.orthographicVerticalSize = 7;
+        //清除标记，仅深度
+        this.camera.clearFlag = Laya.BaseCamera.CLEARFLAG_DEPTHONLY;
+        this.camera.clearColor = null;
+        this.camera.cullingMask = Math.pow(2, 0) | Math.pow(2, 1)
+
         var directionLight: Laya.DirectionLight =  new Laya.DirectionLight;
         this.scene.addChild(directionLight)
 
