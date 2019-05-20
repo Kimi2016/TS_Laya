@@ -37,17 +37,16 @@ export default class Test_12_3DTiledMap {
         //创建Rectangle实例，视口区域
         var viewRect: Laya.Rectangle = new Laya.Rectangle();
         //创建TiledMap地图，加载orthogonal.json后，执行回调方法onMapLoaded()
-        this.tMap.createMap("res/TiledMap/orthogonal.json", viewRect, Laya.Handler.create(this, this.onMapLoaded));
+        this.tMap.createMap("res/TiledMap/background.json", viewRect, Laya.Handler.create(this, this.onMapLoaded));
     }
     private onMapLoaded(): void {
         //与UI搭配的3D场景
         this.addUIScene();
 
-        console.log("onMapLoaded");
         //设置缩放中心点为视口的左上角
         this.tMap.setViewPortPivotByScale(0, 0);
         //将原地图放大3倍
-        this.tMap.scale = 3;
+        //this.tMap.scale = 3;
 
         Laya.stage.on(Laya.Event.RESIZE, this, this.resize);
         //Laya.stage.on(Laya.Event.MOUSE_DOWN, this, this.mouseDown);

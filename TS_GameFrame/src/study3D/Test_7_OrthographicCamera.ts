@@ -38,7 +38,7 @@ export default class Test_7_OrthographicCamera {
     onLoadCompleted(scene: Laya.Scene3D, sprite3D: Laya.Sprite3D): void {
         this.role3D = sprite3D;
         scene.addChild(sprite3D);
-        this.role3D.transform.scale = new Laya.Vector3(0.3, 0.3, 0.3)
+        this.role3D.transform.scale = new Laya.Vector3(0.5, 0.5, 0.5)
         this.resize()
     }
 

@@ -137,10 +137,10 @@ class AppMain {
         //new  Test_4_CustomMesh();
         //new  Test_5_LightDemo();
         //new Test_6_MultiCamera();
-        new Test_7_OrthographicCamera();
+        //new Test_7_OrthographicCamera();
         //new Test_8_D3SpaceToD2Space();
         //new Test_9_SkinAnimation_New();
-        //new Test_12_3DTiledMap();
+        new Test_12_3DTiledMap();
     }
 }
 
