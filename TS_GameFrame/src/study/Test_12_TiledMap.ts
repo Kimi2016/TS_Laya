@@ -1,3 +1,5 @@
+import GameConfig from "../GameConfig";
+
 export default class Test_12_TiledMap {
     //optimization():void{
     //    //当Tiled Mapa不再使用的时候，需要使用destroy()方法进行销毁，回收被占用的内存
@@ -40,13 +42,10 @@ export default class Test_12_TiledMap {
         this.tMap.createMap("res/TiledMap/orthogonal.json", viewRect, Laya.Handler.create(this, this.onMapLoaded));
     }
     private onMapLoaded(): void {
-        var sprite = this.tMap.mapSprite() as Laya.Node
-        console.log("this.tMap.mapSprite:" + (sprite instanceof Laya.Sprite));
-        console.log("this.tMap.mapSprite.parent:" + (sprite.parent instanceof Laya.Sprite));
+        var sprite = this.tMap.mapSprite()
         Laya.stage.setChildIndex(sprite, 0)
-        
 
-        console.log("onMapLoaded");
+        //console.log("onMapLoaded");
         //设置缩放中心点为视口的左上角
         this.tMap.setViewPortPivotByScale(0, 0);
         //将原地图放大3倍
@@ -65,25 +64,16 @@ export default class Test_12_TiledMap {
      */
     onKeyDown(e: Laya.Event): void {
         if (e.keyCode == Laya.Keyboard.UP) {
-
+            this.tMap.moveViewPort(0, -1);
         } else if (e.keyCode == Laya.Keyboard.DOWN) {
-
+            this.tMap.moveViewPort(0, 1);
         } else if (e.keyCode == Laya.Keyboard.LEFT) {
-
+            this.tMap.moveViewPort(-1, 0);
         } else if (e.keyCode == Laya.Keyboard.RIGHT) {
-
+            this.tMap.moveViewPort(1, 0);
         }
     }
 
-    /**
-     * 移动地图视口
-     */
-    private mouseMove(): void {
-        var moveX: number = this.MapX - (Laya.stage.mouseX - this.mLastMouseX);
-        var moveY: number = this.MapY - (Laya.stage.mouseY - this.mLastMouseY)
-        //移动地图视口
-        this.tMap.moveViewPort(moveX, moveY);
-    }
     private mouseUp(): void {
         this.MapX = this.MapX - (Laya.stage.mouseX - this.mLastMouseX);
         this.MapY = this.MapY - (Laya.stage.mouseY - this.mLastMouseY);
@@ -95,12 +85,21 @@ export default class Test_12_TiledMap {
         Laya.stage.on(Laya.Event.MOUSE_MOVE, this, this.mouseMove);
     }
     /**
+     * 移动地图视口
+     */
+    private mouseMove(): void {
+        var moveX: number = this.MapX - (Laya.stage.mouseX - this.mLastMouseX);
+        var moveY: number = this.MapY - (Laya.stage.mouseY - this.mLastMouseY)
+        //移动地图视口
+        this.tMap.moveViewPort(moveX, moveY);
+    }
+    /**
      *  改变视口大小
      *  重设地图视口区域
      */
     private resize(): void {
         //改变视口大小
-        this.tMap.changeViewPort(this.MapX, this.MapY, Laya.Browser.width, Laya.Browser.height);
+        this.tMap.changeViewPort(this.MapX, this.MapY, GameConfig.width, GameConfig.height);
     }
 
 

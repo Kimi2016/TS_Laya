@@ -3,7 +3,9 @@ export default class Test_9_SkinAnimation_New {
     private changeActionButton: Laya.Button;
     private roleAnimator: Laya.Animator;
     private curStateIndex: number = 0;
-    private clipName: Array<string> = ["attack", "idle", "run"];
+    private clipName: Array<string> = ["idle", "run", "flash", "be_attack", "attack1"
+    , "attack2", "attack3", "skill_1", "skill_2", "skill_3", "skill_4", "relive", "Site", "pickup", "walk", "sprint", "Site1"
+    , "tp1", "tp2", "ride_up", "mine", "sit_down", "wounded_idle", "wounded_run", "flyup"];
 
     constructor() {
         var scene: Laya.Scene3D = new Laya.Scene3D();

@@ -48,9 +48,8 @@ class AppMain {
             Laya3D.init(GameConfig.width, GameConfig.height);
         }
         else {
-            // 不支持WebGL时自动切换至Canvas
-            Laya.init(Browser.clientWidth, Browser.clientHeight, WebGL);
-            //Laya.init(GameConfig.width, GameConfig.height, Laya["WebGL"]);
+            //Laya.init(Browser.clientWidth, Browser.clientHeight, WebGL);
+            Laya.init(GameConfig.width, GameConfig.height, Laya["WebGL"]);
         }
         Laya["Physics"] && Laya["Physics"].enable();
         Laya["DebugPanel"] && Laya["DebugPanel"].enable();

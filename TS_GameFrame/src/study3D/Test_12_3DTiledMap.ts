@@ -28,17 +28,24 @@ export default class Test_12_3DTiledMap {
     private MapY: number = 0;
     private mLastMouseX: number;
     private mLastMouseY: number;
+
+
     constructor() {
-        console.log("Test_12_TiledMap");
-        //初始化舞台
-        Laya.init(Laya.Browser.width, Laya.Browser.height, Laya.WebGL);
+        this.createMap();
+    }
+
+    private createMap(): void {
         //创建TiledMap实例
         this.tMap = new Laya.TiledMap();
         //创建Rectangle实例，视口区域
         var viewRect: Laya.Rectangle = new Laya.Rectangle();
+        //视口扩充区域，把视口区域上、下、左、右扩充一下，防止视口移动时的穿帮
+        var paddingRect: Laya.Rectangle = new Laya.Rectangle(0, 0, 100, 100);
+
         //创建TiledMap地图，加载orthogonal.json后，执行回调方法onMapLoaded()
-        this.tMap.createMap("res/TiledMap/background.json", viewRect, Laya.Handler.create(this, this.onMapLoaded));
+        this.tMap.createMap("res/TiledMap/background.json", viewRect, Laya.Handler.create(this, this.onMapLoaded), paddingRect);
     }
+
     private onMapLoaded(): void {
         //与UI搭配的3D场景
         this.addUIScene();
@@ -56,12 +63,12 @@ export default class Test_12_3DTiledMap {
     }
 
     //与UI搭配的3D场景
-    addUIScene():void{
+    addUIScene(): void {
         //重设置层次
         //var sprite = this.tMap.mapSprite()
         //Laya.stage.setChildIndex(sprite, 0)
 
-        var scene3D:Laya.Scene3D = new Laya.Scene3D();
+        var scene3D: Laya.Scene3D = new Laya.Scene3D();
         Laya.stage.addChild(scene3D)
 
         var camera: Laya.Camera = new Laya.Camera(0, 0.1, 100);
@@ -85,19 +92,20 @@ export default class Test_12_3DTiledMap {
         scene3D.addChild(sprite3D);
     }
 
-    /**
-     * 键盘控制
-     * @param e 
-     */
+    private moveSpeed: number = 2;
     onKeyDown(e: Laya.Event): void {
         if (e.keyCode == Laya.Keyboard.UP) {
-
+            this.MapY -= this.moveSpeed
+            this.tMap.moveViewPort(0, this.MapY);
         } else if (e.keyCode == Laya.Keyboard.DOWN) {
-
+            this.MapY += this.moveSpeed
+            this.tMap.moveViewPort(0, this.MapY);
         } else if (e.keyCode == Laya.Keyboard.LEFT) {
-
+            this.MapX -= this.moveSpeed
+            this.tMap.moveViewPort(this.MapX, 0);
         } else if (e.keyCode == Laya.Keyboard.RIGHT) {
-
+            this.MapX += this.moveSpeed
+            this.tMap.moveViewPort(this.MapX, 0);
         }
     }
 
@@ -126,7 +134,7 @@ export default class Test_12_3DTiledMap {
      */
     private resize(): void {
         //改变视口大小
-        this.tMap.changeViewPort(this.MapX, this.MapY, Laya.Browser.width, Laya.Browser.height);
+        this.tMap.changeViewPort(this.MapX, this.MapY, Laya.Browser.clientWidth, Laya.Browser.clientHeight);
     }
 
 
